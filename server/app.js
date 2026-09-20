@@ -104,6 +104,30 @@ app.get('/api/players/search', async (req, res) => {
   }
 });
 
+// Explicit map of all 20 LaLiga teams so esbuild statically bundles them into Netlify functions
+const TEAM_STATS_MAP = {
+  '2814': () => require('./data/team_stats_2814.json'),
+  '2816': () => require('./data/team_stats_2816.json'),
+  '2817': () => require('./data/team_stats_2817.json'),
+  '2818': () => require('./data/team_stats_2818.json'),
+  '2819': () => require('./data/team_stats_2819.json'),
+  '2820': () => require('./data/team_stats_2820.json'),
+  '2821': () => require('./data/team_stats_2821.json'),
+  '2824': () => require('./data/team_stats_2824.json'),
+  '2825': () => require('./data/team_stats_2825.json'),
+  '2828': () => require('./data/team_stats_2828.json'),
+  '2829': () => require('./data/real_madrid_stats.json'),
+  '2830': () => require('./data/team_stats_2830.json'),
+  '2832': () => require('./data/team_stats_2832.json'),
+  '2833': () => require('./data/team_stats_2833.json'),
+  '2835': () => require('./data/team_stats_2835.json'),
+  '2836': () => require('./data/team_stats_2836.json'),
+  '2846': () => require('./data/team_stats_2846.json'),
+  '2849': () => require('./data/team_stats_2849.json'),
+  '2859': () => require('./data/team_stats_2859.json'),
+  '2885': () => require('./data/team_stats_2885.json'),
+};
+
 // Helper to find player stats across all precomputed files
 function findPlayerFallback(playerId) {
   const pIdStr = String(playerId);
@@ -113,53 +137,27 @@ function findPlayerFallback(playerId) {
     } catch (e) {}
   }
 
-  // 1. Check Real Madrid
-  try {
-    const rma = require('./data/real_madrid_stats.json');
-    const f = rma.find(p => String(p.id) === pIdStr);
-    if (f && f.stats) {
-      return {
-        success: true,
-        player: {
-          id: f.id,
-          name: f.name,
-          position: f.position,
-          jerseyNumber: f.jerseyNumber,
-          country: { name: f.country },
-          sofascoreId: f.sofascoreId,
-          team: { name: 'Real Madrid' }
-        },
-        stats: f.stats
-      };
-    }
-  } catch (e) {}
-
-  // 2. Check all team_stats_*.json files
-  try {
-    const dataDir = path.join(__dirname, 'data');
-    const files = fs.readdirSync(dataDir).filter(f => f.startsWith('team_stats_') && f.endsWith('.json'));
-    for (const file of files) {
-      try {
-        const teamData = JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));
-        const f = teamData.find(p => String(p.id) === pIdStr);
-        if (f && f.stats) {
-          return {
-            success: true,
-            player: {
-              id: f.id,
-              name: f.name,
-              position: f.position,
-              jerseyNumber: f.jerseyNumber,
-              country: { name: f.country },
-              sofascoreId: f.sofascoreId,
-              team: { name: f.teamName || 'Equipo' }
-            },
-            stats: f.stats
-          };
-        }
-      } catch (e) {}
-    }
-  } catch (e) {}
+  for (const teamLoader of Object.values(TEAM_STATS_MAP)) {
+    try {
+      const squad = teamLoader();
+      const found = squad.find(p => String(p.id) === pIdStr);
+      if (found && found.stats && found.stats.totalMatchesPlayed > 0) {
+        return {
+          success: true,
+          player: {
+            id: found.id,
+            name: found.name,
+            position: found.position,
+            jerseyNumber: found.jerseyNumber,
+            country: { name: found.country },
+            sofascoreId: found.sofascoreId,
+            team: { name: found.teamName || 'Equipo' }
+          },
+          stats: found.stats
+        };
+      }
+    } catch (e) {}
+  }
 
   return null;
 }
@@ -204,24 +202,17 @@ app.get('/api/players/:playerId/stats', async (req, res) => {
 app.get('/api/teams/:teamId/stats', async (req, res) => {
   const { teamId } = req.params;
 
-  try {
-    // 1. Direct match for pre-calculated team files
-    if (String(teamId) === '2829') {
-      try {
-        const rma = require('./data/real_madrid_stats.json');
-        return res.json({ success: true, players: rma });
-      } catch (e) {}
-    }
-    const teamFile = path.join(__dirname, 'data', `team_stats_${teamId}.json`);
-    if (fs.existsSync(teamFile)) {
-      try {
-        const teamData = JSON.parse(fs.readFileSync(teamFile, 'utf8'));
-        if (teamData && teamData.length > 0) {
-          return res.json({ success: true, players: teamData });
-        }
-      } catch (e) {}
-    }
+  // 1. Direct match for pre-calculated team files (bundled via TEAM_STATS_MAP)
+  if (TEAM_STATS_MAP[teamId]) {
+    try {
+      const teamData = TEAM_STATS_MAP[teamId]();
+      if (teamData && teamData.length > 0) {
+        return res.json({ success: true, players: teamData });
+      }
+    } catch (e) {}
+  }
 
+  try {
     const cacheKey = `team_stats_${teamId}`;
     const cached = cache.get(cacheKey);
     if (cached) {
@@ -271,15 +262,9 @@ app.get('/api/teams/:teamId/stats', async (req, res) => {
     cache.set(cacheKey, enrichedPlayers, 1800); // 30 minutes cache for full squad stats
     res.json({ success: true, players: enrichedPlayers });
   } catch (err) {
-    if (String(teamId) === '2829') {
+    if (TEAM_STATS_MAP[teamId]) {
       try {
-        return res.json({ success: true, players: require('./data/real_madrid_stats.json') });
-      } catch (e) {}
-    }
-    const teamFile = path.join(__dirname, 'data', `team_stats_${teamId}.json`);
-    if (fs.existsSync(teamFile)) {
-      try {
-        return res.json({ success: true, players: JSON.parse(fs.readFileSync(teamFile, 'utf8')) });
+        return res.json({ success: true, players: TEAM_STATS_MAP[teamId]() });
       } catch (e) {}
     }
     try {
