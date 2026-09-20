@@ -51,9 +51,23 @@ app.get('/api/leagues/:leagueId/teams', async (req, res) => {
 app.get('/api/teams/:teamId/players', async (req, res) => {
   try {
     const { teamId } = req.params;
-    const players = await sofascore.getTeamPlayers(teamId);
-    res.json({ success: true, players });
+    let players = await sofascore.getTeamPlayers(teamId);
+    if (!players || players.length === 0) {
+      try {
+        const squads = require('./data/laliga_squads.json');
+        if (squads && squads[teamId]) {
+          players = squads[teamId];
+        }
+      } catch (e) {}
+    }
+    res.json({ success: true, players: players || [] });
   } catch (err) {
+    try {
+      const squads = require('./data/laliga_squads.json');
+      if (squads && squads[req.params.teamId]) {
+        return res.json({ success: true, players: squads[req.params.teamId] });
+      }
+    } catch (e) {}
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -90,12 +104,72 @@ app.get('/api/players/search', async (req, res) => {
   }
 });
 
+// Helper to find player stats across all precomputed files
+function findPlayerFallback(playerId) {
+  const pIdStr = String(playerId);
+  if (pIdStr === '826643') {
+    try {
+      return require('./data/player_826643.json');
+    } catch (e) {}
+  }
+
+  // 1. Check Real Madrid
+  try {
+    const rma = require('./data/real_madrid_stats.json');
+    const f = rma.find(p => String(p.id) === pIdStr);
+    if (f && f.stats) {
+      return {
+        success: true,
+        player: {
+          id: f.id,
+          name: f.name,
+          position: f.position,
+          jerseyNumber: f.jerseyNumber,
+          country: { name: f.country },
+          sofascoreId: f.sofascoreId,
+          team: { name: 'Real Madrid' }
+        },
+        stats: f.stats
+      };
+    }
+  } catch (e) {}
+
+  // 2. Check all team_stats_*.json files
+  try {
+    const dataDir = path.join(__dirname, 'data');
+    const files = fs.readdirSync(dataDir).filter(f => f.startsWith('team_stats_') && f.endsWith('.json'));
+    for (const file of files) {
+      try {
+        const teamData = JSON.parse(fs.readFileSync(path.join(dataDir, file), 'utf8'));
+        const f = teamData.find(p => String(p.id) === pIdStr);
+        if (f && f.stats) {
+          return {
+            success: true,
+            player: {
+              id: f.id,
+              name: f.name,
+              position: f.position,
+              jerseyNumber: f.jerseyNumber,
+              country: { name: f.country },
+              sofascoreId: f.sofascoreId,
+              team: { name: f.teamName || 'Equipo' }
+            },
+            stats: f.stats
+          };
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+
+  return null;
+}
+
 // 5. Get Individual Player Full Stats (1M, 2M, 3M, 6M, 12M, monthly graph, match history)
 app.get('/api/players/:playerId/stats', async (req, res) => {
-  try {
-    const { playerId } = req.params;
-    const position = req.query.pos || 'F';
+  const { playerId } = req.params;
+  const position = req.query.pos || 'F';
 
+  try {
     // Fetch player info if needed
     const playerDetails = await sofascore.getPlayerDetails(playerId);
 
@@ -111,56 +185,43 @@ app.get('/api/players/:playerId/stats', async (req, res) => {
       });
     }
 
-    // Fallback: Mbappé
-    if (String(playerId) === '826643') {
-      try {
-        const mbappe = require('./data/player_826643.json');
-        return res.json(mbappe);
-      } catch (e) {}
-    }
+    const fallback = findPlayerFallback(playerId);
+    if (fallback) return res.json(fallback);
 
-    // Fallback: Real Madrid player stats
-    try {
-      const rmaPlayers = require('./data/real_madrid_stats.json');
-      const found = rmaPlayers.find(p => String(p.id) === String(playerId));
-      if (found && found.stats) {
-        return res.json({
-          success: true,
-          player: {
-            id: found.id,
-            name: found.name,
-            position: found.position,
-            jerseyNumber: found.jerseyNumber,
-            country: { name: found.country },
-            sofascoreId: found.sofascoreId,
-            team: { name: 'Real Madrid' }
-          },
-          stats: found.stats
-        });
-      }
-    } catch (e) {}
-
-    const stats = calculator.calculatePlayerStats(eventsData, position);
     res.json({
       success: true,
       player: playerDetails,
-      stats
+      stats: calculator.calculatePlayerStats({ events: [], statistics: {}, incidents: {} }, position)
     });
   } catch (err) {
-    if (String(req.params.playerId) === '826643') {
-      try {
-        const mbappe = require('./data/player_826643.json');
-        return res.json(mbappe);
-      } catch (e) {}
-    }
+    const fallback = findPlayerFallback(playerId);
+    if (fallback) return res.json(fallback);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // 6. Get Team Squad with Aggregated Stats (1M, 2M, 3M, 6M, 12M for all players in team)
 app.get('/api/teams/:teamId/stats', async (req, res) => {
+  const { teamId } = req.params;
+
   try {
-    const { teamId } = req.params;
+    // 1. Direct match for pre-calculated team files
+    if (String(teamId) === '2829') {
+      try {
+        const rma = require('./data/real_madrid_stats.json');
+        return res.json({ success: true, players: rma });
+      } catch (e) {}
+    }
+    const teamFile = path.join(__dirname, 'data', `team_stats_${teamId}.json`);
+    if (fs.existsSync(teamFile)) {
+      try {
+        const teamData = JSON.parse(fs.readFileSync(teamFile, 'utf8'));
+        if (teamData && teamData.length > 0) {
+          return res.json({ success: true, players: teamData });
+        }
+      } catch (e) {}
+    }
+
     const cacheKey = `team_stats_${teamId}`;
     const cached = cache.get(cacheKey);
     if (cached) {
@@ -169,12 +230,15 @@ app.get('/api/teams/:teamId/stats', async (req, res) => {
 
     let players = await sofascore.getTeamPlayers(teamId);
     if (!players || players.length === 0) {
-      if (String(teamId) === '2829') {
-        try {
-          players = require('./data/real_madrid_stats.json');
-          return res.json({ success: true, players });
-        } catch (e) {}
-      }
+      try {
+        const squads = require('./data/laliga_squads.json');
+        if (squads && squads[teamId]) {
+          players = squads[teamId];
+        }
+      } catch (e) {}
+    }
+
+    if (!players || players.length === 0) {
       return res.json({ success: true, players: [] });
     }
 
@@ -195,7 +259,7 @@ app.get('/api/teams/:teamId/stats', async (req, res) => {
         } catch (e) {
           return {
             ...p,
-            stats: null
+            stats: calculator.calculatePlayerStats({ events: [], statistics: {}, incidents: {} }, p.position)
           };
         }
       });
@@ -207,12 +271,27 @@ app.get('/api/teams/:teamId/stats', async (req, res) => {
     cache.set(cacheKey, enrichedPlayers, 1800); // 30 minutes cache for full squad stats
     res.json({ success: true, players: enrichedPlayers });
   } catch (err) {
-    if (String(req.params.teamId) === '2829') {
+    if (String(teamId) === '2829') {
       try {
-        const players = require('./data/real_madrid_stats.json');
-        return res.json({ success: true, players });
+        return res.json({ success: true, players: require('./data/real_madrid_stats.json') });
       } catch (e) {}
     }
+    const teamFile = path.join(__dirname, 'data', `team_stats_${teamId}.json`);
+    if (fs.existsSync(teamFile)) {
+      try {
+        return res.json({ success: true, players: JSON.parse(fs.readFileSync(teamFile, 'utf8')) });
+      } catch (e) {}
+    }
+    try {
+      const squads = require('./data/laliga_squads.json');
+      if (squads && squads[teamId]) {
+        const fallbackPlayers = squads[teamId].map(p => ({
+          ...p,
+          stats: calculator.calculatePlayerStats({ events: [], statistics: {}, incidents: {} }, p.position)
+        }));
+        return res.json({ success: true, players: fallbackPlayers });
+      }
+    } catch(e) {}
     res.status(500).json({ success: false, error: err.message });
   }
 });

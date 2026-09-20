@@ -302,6 +302,30 @@
             7.8,
             9.7
           ]
+        },
+        "last2m": {
+          "matchesCount": 8,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 674,
+          "avgMinutes": 84,
+          "avgRating": 8.17,
+          "avgBiwengerPoints": 9.25,
+          "totalGoals": 9,
+          "avgGoals": 1.13,
+          "totalAssists": 2,
+          "avgAssists": 0.25,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            8.5,
+            9.5,
+            7.7,
+            6,
+            9.1,
+            10,
+            6.4,
+            8.2
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -1255,6 +1279,32 @@
             7,
             7.3
           ]
+        },
+        "last2m": {
+          "matchesCount": 10,
+          "ratedMatchesCount": 10,
+          "totalMinutes": 801,
+          "avgMinutes": 80,
+          "avgRating": 6.97,
+          "avgBiwengerPoints": 3.9,
+          "totalGoals": 1,
+          "avgGoals": 0.1,
+          "totalAssists": 3,
+          "avgAssists": 0.3,
+          "totalYellowCards": 2,
+          "totalRedCards": 0,
+          "ratings": [
+            5.7,
+            7.8,
+            7.2,
+            7,
+            7.4,
+            7.8,
+            7,
+            6.5,
+            6.8,
+            6.5
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -2103,6 +2153,20 @@
             7.3,
             7.2
           ]
+        },
+        "last2m": {
+          "matchesCount": 0,
+          "totalMinutes": 0,
+          "avgMinutes": 0,
+          "avgRating": null,
+          "avgBiwengerPoints": null,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": []
         }
       },
       "monthlyBreakdown": [
@@ -2971,6 +3035,26 @@
             6.3,
             6.4,
             5.8
+          ]
+        },
+        "last2m": {
+          "matchesCount": 4,
+          "ratedMatchesCount": 4,
+          "totalMinutes": 194,
+          "avgMinutes": 49,
+          "avgRating": 6.77,
+          "avgBiwengerPoints": 4,
+          "totalGoals": 1,
+          "avgGoals": 0.25,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            6.4,
+            6.5,
+            7,
+            7.2
           ]
         }
       },
@@ -3879,6 +3963,30 @@
             6.6,
             7.9
           ]
+        },
+        "last2m": {
+          "matchesCount": 8,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 288,
+          "avgMinutes": 36,
+          "avgRating": 6.84,
+          "avgBiwengerPoints": 3.38,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 1,
+          "avgAssists": 0.13,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            7.3,
+            7.3,
+            6.6,
+            6.5,
+            7,
+            6.6,
+            6.5,
+            6.9
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -4744,6 +4852,30 @@
             6.3,
             8.3,
             6.9
+          ]
+        },
+        "last2m": {
+          "matchesCount": 9,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 186,
+          "avgMinutes": 21,
+          "avgRating": 6.94,
+          "avgBiwengerPoints": 4.75,
+          "totalGoals": 4,
+          "avgGoals": 0.44,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            7.3,
+            6.4,
+            6.4,
+            7.8,
+            7.3,
+            6.6,
+            7.4,
+            6.3
           ]
         }
       },
@@ -5682,6 +5814,30 @@
             7.4,
             7
           ]
+        },
+        "last2m": {
+          "matchesCount": 8,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 566,
+          "avgMinutes": 71,
+          "avgRating": 7.7,
+          "avgBiwengerPoints": 6.88,
+          "totalGoals": 3,
+          "avgGoals": 0.38,
+          "totalAssists": 2,
+          "avgAssists": 0.25,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            6.8,
+            8.1,
+            7.1,
+            7.1,
+            8.5,
+            9,
+            8.1,
+            6.9
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -6611,6 +6767,33 @@
             7.5,
             7.4
           ]
+        },
+        "last2m": {
+          "matchesCount": 11,
+          "ratedMatchesCount": 11,
+          "totalMinutes": 853,
+          "avgMinutes": 78,
+          "avgRating": 7.27,
+          "avgBiwengerPoints": 4.73,
+          "totalGoals": 1,
+          "avgGoals": 0.09,
+          "totalAssists": 2,
+          "avgAssists": 0.18,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            7,
+            7,
+            8.3,
+            6.7,
+            7.1,
+            7.7,
+            7.3,
+            7.3,
+            6.9,
+            7,
+            7.7
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -7522,6 +7705,32 @@
             7.6,
             6.5,
             7.5
+          ]
+        },
+        "last2m": {
+          "matchesCount": 10,
+          "ratedMatchesCount": 10,
+          "totalMinutes": 566,
+          "avgMinutes": 57,
+          "avgRating": 7.51,
+          "avgBiwengerPoints": 5.1,
+          "totalGoals": 1,
+          "avgGoals": 0.1,
+          "totalAssists": 3,
+          "avgAssists": 0.3,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            7.3,
+            7.8,
+            7.4,
+            7.6,
+            7.4,
+            8,
+            7.2,
+            6.8,
+            8.3,
+            7.3
           ]
         }
       },
@@ -8440,6 +8649,29 @@
             7.8,
             7.9
           ]
+        },
+        "last2m": {
+          "matchesCount": 7,
+          "ratedMatchesCount": 7,
+          "totalMinutes": 329,
+          "avgMinutes": 47,
+          "avgRating": 6.97,
+          "avgBiwengerPoints": 4.29,
+          "totalGoals": 1,
+          "avgGoals": 0.14,
+          "totalAssists": 1,
+          "avgAssists": 0.14,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            6.3,
+            8.4,
+            6.6,
+            6.6,
+            6.7,
+            7.6,
+            6.6
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -9342,6 +9574,31 @@
             7.7,
             6.6
           ]
+        },
+        "last2m": {
+          "matchesCount": 9,
+          "ratedMatchesCount": 9,
+          "totalMinutes": 491,
+          "avgMinutes": 55,
+          "avgRating": 7.11,
+          "avgBiwengerPoints": 3.56,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 1,
+          "avgAssists": 0.11,
+          "totalYellowCards": 4,
+          "totalRedCards": 0,
+          "ratings": [
+            7.3,
+            6.8,
+            6.9,
+            6.8,
+            6.6,
+            7.1,
+            7.5,
+            7.5,
+            7.5
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -10236,6 +10493,25 @@
             7.5,
             6.5,
             6.8
+          ]
+        },
+        "last2m": {
+          "matchesCount": 3,
+          "ratedMatchesCount": 3,
+          "totalMinutes": 118,
+          "avgMinutes": 39,
+          "avgRating": 6.8,
+          "avgBiwengerPoints": 3,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            6.9,
+            6.9,
+            6.6
           ]
         }
       },
@@ -11147,6 +11423,30 @@
             7,
             7
           ]
+        },
+        "last2m": {
+          "matchesCount": 8,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 466,
+          "avgMinutes": 58,
+          "avgRating": 6.66,
+          "avgBiwengerPoints": 3,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            6.8,
+            6.6,
+            6.5,
+            7,
+            6.2,
+            6.6,
+            7.2,
+            6.4
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -11986,6 +12286,20 @@
             7.3,
             7
           ]
+        },
+        "last2m": {
+          "matchesCount": 0,
+          "totalMinutes": 0,
+          "avgMinutes": 0,
+          "avgRating": null,
+          "avgBiwengerPoints": null,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": []
         }
       },
       "monthlyBreakdown": [
@@ -12876,6 +13190,31 @@
             6.7,
             7.3
           ]
+        },
+        "last2m": {
+          "matchesCount": 10,
+          "ratedMatchesCount": 9,
+          "totalMinutes": 654,
+          "avgMinutes": 65,
+          "avgRating": 6.44,
+          "avgBiwengerPoints": 2.33,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            6.6,
+            6.4,
+            6.6,
+            6.1,
+            6.6,
+            6.9,
+            6,
+            6.4,
+            6.4
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -13735,6 +14074,29 @@
             7,
             7
           ]
+        },
+        "last2m": {
+          "matchesCount": 7,
+          "ratedMatchesCount": 7,
+          "totalMinutes": 318,
+          "avgMinutes": 45,
+          "avgRating": 6.94,
+          "avgBiwengerPoints": 3.86,
+          "totalGoals": 1,
+          "avgGoals": 0.14,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            6.5,
+            7.9,
+            7,
+            6.9,
+            6.8,
+            6.8,
+            6.7
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -14506,6 +14868,24 @@
             6.9,
             6.1
           ]
+        },
+        "last2m": {
+          "matchesCount": 3,
+          "ratedMatchesCount": 2,
+          "totalMinutes": 104,
+          "avgMinutes": 35,
+          "avgRating": 7.05,
+          "avgBiwengerPoints": 4,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            7.6,
+            6.5
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -15004,6 +15384,31 @@
             6.5,
             6.7,
             7.4
+          ]
+        },
+        "last2m": {
+          "matchesCount": 9,
+          "ratedMatchesCount": 9,
+          "totalMinutes": 533,
+          "avgMinutes": 59,
+          "avgRating": 7.08,
+          "avgBiwengerPoints": 3.89,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 1,
+          "avgAssists": 0.11,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            7.1,
+            6.5,
+            6.5,
+            7.9,
+            7,
+            7.2,
+            7.8,
+            6.5,
+            7.2
           ]
         }
       },
@@ -15874,6 +16279,27 @@
             6.6,
             6.6,
             7
+          ]
+        },
+        "last2m": {
+          "matchesCount": 5,
+          "ratedMatchesCount": 5,
+          "totalMinutes": 315,
+          "avgMinutes": 63,
+          "avgRating": 6.92,
+          "avgBiwengerPoints": 3.2,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            7.3,
+            7.5,
+            6.8,
+            6.3,
+            6.7
           ]
         }
       },
@@ -16754,6 +17180,31 @@
             7.7,
             8.5
           ]
+        },
+        "last2m": {
+          "matchesCount": 9,
+          "ratedMatchesCount": 9,
+          "totalMinutes": 761,
+          "avgMinutes": 85,
+          "avgRating": 7.2,
+          "avgBiwengerPoints": 4.44,
+          "totalGoals": 1,
+          "avgGoals": 0.11,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            6.5,
+            6.9,
+            7.7,
+            7.1,
+            7.3,
+            7,
+            7.9,
+            7.6,
+            6.8
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -17585,6 +18036,20 @@
             6.3,
             6.9
           ]
+        },
+        "last2m": {
+          "matchesCount": 0,
+          "totalMinutes": 0,
+          "avgMinutes": 0,
+          "avgRating": null,
+          "avgBiwengerPoints": null,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": []
         }
       },
       "monthlyBreakdown": [
@@ -18418,6 +18883,20 @@
             6.2,
             7.1
           ]
+        },
+        "last2m": {
+          "matchesCount": 0,
+          "totalMinutes": 0,
+          "avgMinutes": 0,
+          "avgRating": null,
+          "avgBiwengerPoints": null,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": []
         }
       },
       "monthlyBreakdown": [
@@ -19334,6 +19813,29 @@
             7,
             6
           ]
+        },
+        "last2m": {
+          "matchesCount": 8,
+          "ratedMatchesCount": 7,
+          "totalMinutes": 459,
+          "avgMinutes": 57,
+          "avgRating": 6.76,
+          "avgBiwengerPoints": 2.86,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            5.8,
+            7,
+            6.8,
+            7.3,
+            6.9,
+            6.9,
+            6.6
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -20201,6 +20703,30 @@
             6.6,
             6.7
           ]
+        },
+        "last2m": {
+          "matchesCount": 9,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 536,
+          "avgMinutes": 60,
+          "avgRating": 7.09,
+          "avgBiwengerPoints": 4.5,
+          "totalGoals": 1,
+          "avgGoals": 0.11,
+          "totalAssists": 2,
+          "avgAssists": 0.22,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            8.7,
+            6.9,
+            6.2,
+            6.8,
+            7.7,
+            7.2,
+            6.1,
+            7.1
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -21005,6 +21531,20 @@
             6.6,
             6.5
           ]
+        },
+        "last2m": {
+          "matchesCount": 0,
+          "totalMinutes": 0,
+          "avgMinutes": 0,
+          "avgRating": null,
+          "avgBiwengerPoints": null,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": []
         }
       },
       "monthlyBreakdown": [
@@ -21884,6 +22424,29 @@
             7.1,
             6.4
           ]
+        },
+        "last2m": {
+          "matchesCount": 7,
+          "ratedMatchesCount": 7,
+          "totalMinutes": 585,
+          "avgMinutes": 84,
+          "avgRating": 6.9,
+          "avgBiwengerPoints": 3,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 3,
+          "totalRedCards": 0,
+          "ratings": [
+            6.9,
+            6.4,
+            7,
+            6.5,
+            7.3,
+            7.2,
+            7
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -22721,6 +23284,28 @@
             6.6,
             6.7,
             5.9
+          ]
+        },
+        "last2m": {
+          "matchesCount": 7,
+          "ratedMatchesCount": 6,
+          "totalMinutes": 449,
+          "avgMinutes": 64,
+          "avgRating": 7.28,
+          "avgBiwengerPoints": 5,
+          "totalGoals": 1,
+          "avgGoals": 0.14,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 1,
+          "totalRedCards": 0,
+          "ratings": [
+            8,
+            6.5,
+            7.7,
+            7.1,
+            7.7,
+            6.7
           ]
         }
       },
@@ -23633,6 +24218,30 @@
             7,
             6.3
           ]
+        },
+        "last2m": {
+          "matchesCount": 8,
+          "ratedMatchesCount": 8,
+          "totalMinutes": 675,
+          "avgMinutes": 84,
+          "avgRating": 6.77,
+          "avgBiwengerPoints": 3.13,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            6.2,
+            7.8,
+            6.8,
+            6.7,
+            6.8,
+            6.6,
+            6.5,
+            6.8
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -24423,6 +25032,26 @@
             6.7,
             6.3
           ]
+        },
+        "last2m": {
+          "matchesCount": 4,
+          "ratedMatchesCount": 4,
+          "totalMinutes": 312,
+          "avgMinutes": 78,
+          "avgRating": 7.33,
+          "avgBiwengerPoints": 4.5,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 1,
+          "avgAssists": 0.25,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            8.2,
+            7.9,
+            6.7,
+            6.5
+          ]
         }
       },
       "monthlyBreakdown": [
@@ -25030,6 +25659,24 @@
             7.2,
             5.7,
             7
+          ]
+        },
+        "last2m": {
+          "matchesCount": 2,
+          "ratedMatchesCount": 2,
+          "totalMinutes": 180,
+          "avgMinutes": 90,
+          "avgRating": 7.2,
+          "avgBiwengerPoints": 4,
+          "totalGoals": 0,
+          "avgGoals": 0,
+          "totalAssists": 0,
+          "avgAssists": 0,
+          "totalYellowCards": 0,
+          "totalRedCards": 0,
+          "ratings": [
+            7.2,
+            7.2
           ]
         }
       },
