@@ -1,4 +1,4 @@
-// SofaBiwenger Stats App Client Logic
+// SofaBiwenger Stats & Tactical Scouting App Client Logic
 const DEFAULT_LEAGUES = [
   { id: 8, name: "LaLiga EA Sports", country: "España", flag: "es", logo: "https://api.sofascore.app/api/v1/unique-tournament/8/image" },
   { id: 17, name: "Premier League", country: "Inglaterra", flag: "gb-eng", logo: "https://api.sofascore.app/api/v1/unique-tournament/17/image" },
@@ -11,6 +11,7 @@ const DEFAULT_LEAGUES = [
 ];
 
 const state = {
+  activeView: 'scouting', // 'scouting' | 'stats' | 'live'
   metric: 'sofascore', // 'sofascore' | 'biwenger'
   leagues: DEFAULT_LEAGUES,
   selectedLeagueId: 8, // LaLiga default
@@ -20,11 +21,49 @@ const state = {
   positionFilter: 'ALL',
   sortBy: 'rating_1m',
   liveMatches: [],
-  activePlayerStats: null
+  activePlayerStats: null,
+
+  // Scouting State
+  scoutingRole: 'PIVOTE',
+  scoutingWindow: '3m', // '3m' | '6m' | '12m'
+  scoutingTeamFilter: 'ALL',
+  scoutingComplianceFilter: 'ALL',
+  scoutingSortBy: 'compliance',
+  scoutingData: null,
+  rolesConfig: null,
+  modalTacticalWindow: 'last3m'
 };
 
 // DOM Elements
 const elements = {
+  // Navigation
+  viewScoutingBtn: document.getElementById('viewScoutingBtn'),
+  viewStatsBtn: document.getElementById('viewStatsBtn'),
+  viewLiveBtn: document.getElementById('viewLiveBtn'),
+  scoutingView: document.getElementById('scoutingView'),
+  statsView: document.getElementById('statsView'),
+  liveView: document.getElementById('liveView'),
+  
+  // Metric toggle
+  toggleSofascore: document.getElementById('toggleSofascore'),
+  toggleBiwenger: document.getElementById('toggleBiwenger'),
+  currentMetricNames: document.querySelectorAll('.current-metric-name'),
+
+  // Scouting Elements
+  scoutingRolesBar: document.getElementById('scoutingRolesBar'),
+  scoutingWindowChips: document.getElementById('scoutingWindowChips'),
+  scoutingTeamFilter: document.getElementById('scoutingTeamFilter'),
+  scoutingComplianceFilter: document.getElementById('scoutingComplianceFilter'),
+  scoutingSortSelect: document.getElementById('scoutingSortSelect'),
+  criteriaSummaryBanner: document.getElementById('criteriaSummaryBanner'),
+  scoutingRoleTitle: document.getElementById('scoutingRoleTitle'),
+  scoutingRoleTitleIcon: document.getElementById('scoutingRoleTitleIcon'),
+  scoutingTotalBadge: document.getElementById('scoutingTotalBadge'),
+  scoutingTableHead: document.getElementById('scoutingTableHead'),
+  scoutingTableBody: document.getElementById('scoutingTableBody'),
+  scoutingLoadingState: document.getElementById('scoutingLoadingState'),
+
+  // Team View Elements
   leaguesBar: document.getElementById('leaguesBar'),
   teamSelect: document.getElementById('teamSelect'),
   posChips: document.querySelectorAll('.pos-chip'),
@@ -35,27 +74,22 @@ const elements = {
   currentTeamTitle: document.getElementById('currentTeamTitle'),
   currentTeamLogo: document.getElementById('currentTeamLogo'),
   playersCountBadge: document.getElementById('playersCountBadge'),
-  
-  toggleSofascore: document.getElementById('toggleSofascore'),
-  toggleBiwenger: document.getElementById('toggleBiwenger'),
-  currentMetricNames: document.querySelectorAll('.current-metric-name'),
 
-  viewStatsBtn: document.getElementById('viewStatsBtn'),
-  viewLiveBtn: document.getElementById('viewLiveBtn'),
-  statsView: document.getElementById('statsView'),
-  liveView: document.getElementById('liveView'),
+  // Live View Elements
   liveCountBadge: document.getElementById('liveCountBadge'),
   liveMatchesGrid: document.getElementById('liveMatchesGrid'),
   refreshLiveBtn: document.getElementById('refreshLiveBtn'),
   liveMatchDetails: document.getElementById('liveMatchDetails'),
   closeLiveDetailsBtn: document.getElementById('closeLiveDetailsBtn'),
+  liveMatchTitle: document.getElementById('liveMatchTitle'),
   liveLineupsContainer: document.getElementById('liveLineupsContainer'),
 
+  // Search Elements
   searchInput: document.getElementById('playerSearchInput'),
   searchSpinner: document.getElementById('searchSpinner'),
   searchResultsDropdown: document.getElementById('searchResultsDropdown'),
 
-  // Modal
+  // Modal Elements
   playerModal: document.getElementById('playerModal'),
   closeModalBtn: document.getElementById('closeModalBtn'),
   modalLoading: document.getElementById('modalLoading'),
@@ -70,6 +104,13 @@ const elements = {
   sofaAverage12mBadge: document.getElementById('sofaAverage12mBadge'),
   monthlyBarsChart: document.getElementById('monthlyBarsChart'),
   matchesHistoryTableBody: document.getElementById('matchesHistoryTableBody'),
+
+  // Modal Tactical Elements
+  modalTacticalIcon: document.getElementById('modalTacticalIcon'),
+  modalTacticalRoleName: document.getElementById('modalTacticalRoleName'),
+  modalTacticalComplianceBadge: document.getElementById('modalTacticalComplianceBadge'),
+  modalTacticalTabs: document.getElementById('modalTacticalTabs'),
+  modalTacticalCriteriaGrid: document.getElementById('modalTacticalCriteriaGrid'),
 
   // Modal Window Stats
   pj_1m: document.getElementById('pj_1m'),
@@ -141,6 +182,7 @@ async function init() {
   bindEvents();
   renderLeaguesBar();
   await loadLeagues();
+  await loadScoutingRankings();
   checkLiveMatches();
   setInterval(checkLiveMatches, 30000); // Polling live matches every 30s
 }
@@ -151,17 +193,54 @@ function bindEvents() {
   elements.toggleSofascore.addEventListener('click', () => setMetric('sofascore'));
   elements.toggleBiwenger.addEventListener('click', () => setMetric('biwenger'));
 
-  // View switch
+  // Main View switch buttons
+  elements.viewScoutingBtn.addEventListener('click', () => switchView('scouting'));
   elements.viewStatsBtn.addEventListener('click', () => switchView('stats'));
   elements.viewLiveBtn.addEventListener('click', () => switchView('live'));
 
-  // Team Select Change
+  // Scouting Role Chips
+  document.querySelectorAll('#scoutingRolesBar .role-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#scoutingRolesBar .role-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.scoutingRole = chip.dataset.role;
+      loadScoutingRankings();
+    });
+  });
+
+  // Scouting Window Chips
+  document.querySelectorAll('#scoutingWindowChips .window-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#scoutingWindowChips .window-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.scoutingWindow = chip.dataset.window;
+      loadScoutingRankings();
+    });
+  });
+
+  // Scouting Filters & Sorting
+  elements.scoutingTeamFilter.addEventListener('change', (e) => {
+    state.scoutingTeamFilter = e.target.value;
+    renderScoutingTable();
+  });
+
+  elements.scoutingComplianceFilter.addEventListener('change', (e) => {
+    state.scoutingComplianceFilter = e.target.value;
+    renderScoutingTable();
+  });
+
+  elements.scoutingSortSelect.addEventListener('change', (e) => {
+    state.scoutingSortBy = e.target.value;
+    renderScoutingTable();
+  });
+
+  // Team View Select Change
   elements.teamSelect.addEventListener('change', (e) => {
     state.selectedTeamId = e.target.value;
     loadTeamSquad(state.selectedTeamId);
   });
 
-  // Position Chips
+  // Position Chips in Team View
   elements.posChips.forEach(chip => {
     chip.addEventListener('click', () => {
       elements.posChips.forEach(c => c.classList.remove('active'));
@@ -171,7 +250,7 @@ function bindEvents() {
     });
   });
 
-  // Sort Select
+  // Sort Select in Team View
   elements.sortSelect.addEventListener('change', (e) => {
     state.sortBy = e.target.value;
     renderSquadTable();
@@ -197,6 +276,16 @@ function bindEvents() {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
+  });
+
+  // Modal Tactical Tabs
+  document.querySelectorAll('#modalTacticalTabs .modal-tab-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#modalTacticalTabs .modal-tab-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.modalTacticalWindow = chip.dataset.window;
+      updateModalTacticalView();
+    });
   });
 
   // Search input debounced
@@ -231,28 +320,255 @@ function setMetric(metric) {
     elements.toggleSofascore.classList.remove('active');
     elements.currentMetricNames.forEach(el => el.textContent = 'Pts Biw');
   }
-  renderSquadTable();
+  if (state.activeView === 'scouting') {
+    renderScoutingTable();
+  } else {
+    renderSquadTable();
+  }
   if (state.activePlayerStats) {
     updateModalStatsValues();
   }
 }
 
 function switchView(view) {
-  if (view === 'stats') {
-    elements.viewStatsBtn.classList.add('active');
-    elements.viewLiveBtn.classList.remove('active');
-    elements.statsView.classList.remove('hidden');
-    elements.liveView.classList.add('hidden');
-  } else {
-    elements.viewLiveBtn.classList.add('active');
-    elements.viewStatsBtn.classList.remove('active');
-    elements.liveView.classList.remove('hidden');
-    elements.statsView.classList.add('hidden');
+  state.activeView = view;
+  elements.viewScoutingBtn.classList.toggle('active', view === 'scouting');
+  elements.viewStatsBtn.classList.toggle('active', view === 'stats');
+  elements.viewLiveBtn.classList.toggle('active', view === 'live');
+
+  elements.scoutingView.classList.toggle('hidden', view !== 'scouting');
+  elements.statsView.classList.toggle('hidden', view !== 'stats');
+  elements.liveView.classList.toggle('hidden', view !== 'live');
+
+  if (view === 'scouting') {
+    if (!state.scoutingData) {
+      loadScoutingRankings();
+    } else {
+      renderScoutingTable();
+    }
+  } else if (view === 'stats') {
+    if (state.players.length === 0 && state.selectedTeamId) {
+      loadTeamSquad(state.selectedTeamId);
+    }
+  } else if (view === 'live') {
     checkLiveMatches();
   }
 }
 
-// 3. Load Leagues
+// ==========================================================================
+// 3. TACTICAL SCOUTING SYSTEM (User's Matrix: 3M, 6M, 12M across full league)
+// ==========================================================================
+
+async function loadScoutingRankings() {
+  elements.scoutingLoadingState.classList.remove('hidden');
+  elements.scoutingTableBody.innerHTML = '';
+
+  try {
+    const res = await fetch(`/api/scouting/rankings?role=${state.scoutingRole}&window=${state.scoutingWindow}&t=${Date.now()}`);
+    const data = await res.json();
+    elements.scoutingLoadingState.classList.add('hidden');
+
+    if (data.success && data.role) {
+      state.scoutingData = data;
+      renderCriteriaBanner(data.role);
+      updateScoutingHeader(data.role, data.totalPlayers);
+      updateScoutingTeamFilterOptions();
+      renderScoutingTable();
+    } else {
+      elements.scoutingTableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">No se pudieron cargar los datos de scouting.</td></tr>`;
+    }
+  } catch (err) {
+    elements.scoutingLoadingState.classList.add('hidden');
+    console.error('Scouting load error:', err);
+    elements.scoutingTableBody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 40px; color: #ef4444;">Error al conectar con la API de scouting.</td></tr>`;
+  }
+}
+
+function updateScoutingHeader(roleDef, totalCount) {
+  elements.scoutingRoleTitleIcon.textContent = roleDef.icon || '🎯';
+  elements.scoutingRoleTitle.textContent = `Ranking de ${roleDef.name} (${state.scoutingWindow.toUpperCase()})`;
+  elements.scoutingTotalBadge.textContent = `${totalCount} jugadores evaluados`;
+
+  // Update sort dropdown options to include role criteria
+  elements.scoutingSortSelect.innerHTML = `
+    <option value="compliance">Mayor Cumplimiento (Requisitos)</option>
+    <option value="rating">Mayor Nota Media</option>
+  `;
+  roleDef.criteria.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = `metric_${c.id}`;
+    opt.textContent = `Mayor: ${c.label}`;
+    elements.scoutingSortSelect.appendChild(opt);
+  });
+  elements.scoutingSortSelect.value = state.scoutingSortBy || 'compliance';
+}
+
+function updateScoutingTeamFilterOptions() {
+  if (state.teams.length > 0 && elements.scoutingTeamFilter.options.length <= 1) {
+    elements.scoutingTeamFilter.innerHTML = '<option value="ALL">Todos los equipos de LaLiga</option>';
+    state.teams.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = t.name;
+      elements.scoutingTeamFilter.appendChild(opt);
+    });
+  }
+}
+
+function renderCriteriaBanner(roleDef) {
+  elements.criteriaSummaryBanner.innerHTML = '';
+  if (!roleDef || !roleDef.criteria) return;
+
+  roleDef.criteria.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'criteria-card-item';
+    card.style.borderLeftColor = roleDef.color || '#00d66c';
+    card.innerHTML = `
+      <span class="criteria-card-label">${c.label}</span>
+      <span class="criteria-card-target" style="color: ${roleDef.color || '#00d66c'};">${c.thresholdDisplay}</span>
+      <span class="criteria-card-desc">${c.desc}</span>
+    `;
+    elements.criteriaSummaryBanner.appendChild(card);
+  });
+}
+
+function renderScoutingTable() {
+  if (!state.scoutingData || !state.scoutingData.role) return;
+
+  const role = state.scoutingData.role;
+  const criteria = role.criteria || [];
+  let players = [...(state.scoutingData.players || [])];
+
+  // 1. Build Table Headers dynamically according to role criteria
+  let headerHtml = `
+    <tr>
+      <th style="width: 48px; text-align: center;">#</th>
+      <th class="th-player">Jugador</th>
+      <th>Equipo</th>
+      <th class="val-center" title="Partidos jugados en la ventana de tiempo">PJ</th>
+  `;
+
+  criteria.forEach(c => {
+    headerHtml += `<th class="val-center" title="${c.desc}">${c.label} <small style="color: var(--text-muted); display: block; font-weight: normal;">(${c.thresholdDisplay})</small></th>`;
+  });
+
+  headerHtml += `
+      <th class="val-center" style="min-width: 140px;">Cumplimiento</th>
+      <th class="val-center current-metric-name">${state.metric === 'sofascore' ? 'Nota' : 'Pts Biw'}</th>
+      <th class="val-center">Acción</th>
+    </tr>
+  `;
+  elements.scoutingTableHead.innerHTML = headerHtml;
+
+  // 2. Filter by Team
+  if (state.scoutingTeamFilter !== 'ALL') {
+    players = players.filter(p => String(p.teamId) === String(state.scoutingTeamFilter));
+  }
+
+  // 3. Filter by Compliance
+  if (state.scoutingComplianceFilter !== 'ALL') {
+    players = players.filter(p => p.status === state.scoutingComplianceFilter);
+  }
+
+  // 4. Sort
+  const sortBy = state.scoutingSortBy;
+  players.sort((a, b) => {
+    if (sortBy === 'compliance') {
+      if (b.passedCount !== a.passedCount) return b.passedCount - a.passedCount;
+      return (b.avgRating || 0) - (a.avgRating || 0);
+    }
+    if (sortBy === 'rating') {
+      return (b.avgRating || 0) - (a.avgRating || 0);
+    }
+    if (sortBy.startsWith('metric_')) {
+      const metricId = sortBy.replace('metric_', '');
+      const valA = a.metricValues?.[metricId] || 0;
+      const valB = b.metricValues?.[metricId] || 0;
+      return valB - valA;
+    }
+    return 0;
+  });
+
+  // 5. Render Rows
+  elements.scoutingTableBody.innerHTML = '';
+
+  if (players.length === 0) {
+    elements.scoutingTableBody.innerHTML = `
+      <tr>
+        <td colspan="${criteria.length + 6}" style="text-align: center; padding: 40px; color: var(--text-muted);">
+          No se encontraron jugadores que coincidan con los filtros de búsqueda seleccionados.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const isSofa = state.metric === 'sofascore';
+
+  players.forEach((p, index) => {
+    const tr = document.createElement('tr');
+
+    const score = isSofa ? p.avgRating : ((p.avgRating ? p.avgRating * 1.15 : 0));
+    const scoreFormatted = score ? score.toFixed(isSofa ? 2 : 1) : '-';
+    const scoreCls = isSofa ? getRatingClass(p.avgRating) : getBiwengerClass(score);
+
+    let rowHtml = `
+      <td class="val-center" style="font-weight: 700; color: ${index < 3 ? '#00d66c' : 'var(--text-muted)'};">${index + 1}</td>
+      <td class="td-player-cell">
+        <img class="player-img-table" src="${p.photo}" alt="${p.name}" onerror="this.src='https://api.sofascore.app/static/images/silhouette.png'">
+        <div class="player-names">
+          <span class="player-fullname">${p.name}</span>
+          <span class="player-submeta">${p.jerseyNumber ? '#' + p.jerseyNumber + ' · ' : ''}${p.country || ''}</span>
+        </div>
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          ${p.teamLogo ? `<img src="${p.teamLogo}" alt="" style="width: 20px; height: 20px; object-fit: contain;">` : ''}
+          <span style="font-weight: 600; font-size: 0.85rem;">${p.teamName || 'Equipo'}</span>
+        </div>
+      </td>
+      <td class="val-center" style="font-weight: 600;">${p.matchesCount}</td>
+    `;
+
+    // Render each criterion cell
+    criteria.forEach(c => {
+      const critObj = p.criteria?.find(item => item.id === c.id) || {};
+      const passed = critObj.passed;
+      const displayVal = critObj.displayValue || '0';
+      const cellCls = passed ? 'metric-val-passed' : 'metric-val-failed';
+      const checkIcon = passed ? '✓' : '✗';
+
+      rowHtml += `
+        <td class="val-center">
+          <span class="metric-val-box ${cellCls}">
+            ${displayVal} <span class="metric-check">${checkIcon}</span>
+          </span>
+        </td>
+      `;
+    });
+
+    rowHtml += `
+      <td class="val-center">
+        <span class="${p.badgeClass}">${p.badgeLabel}</span>
+      </td>
+      <td class="val-center">
+        <span class="score-badge ${scoreCls}">${scoreFormatted}</span>
+      </td>
+      <td class="val-center">
+        <button class="action-btn-sm" onclick="event.stopPropagation(); openPlayerModal(${p.id}, '${p.position}')">Ver Ficha</button>
+      </td>
+    `;
+
+    tr.innerHTML = rowHtml;
+    tr.addEventListener('click', () => openPlayerModal(p.id, p.position));
+    elements.scoutingTableBody.appendChild(tr);
+  });
+}
+
+// ==========================================================================
+// 4. TEAM VIEW (Squad by Team & Positions)
+// ==========================================================================
+
 async function loadLeagues() {
   try {
     const res = await fetch('/api/leagues');
@@ -285,7 +601,6 @@ async function selectLeague(leagueId) {
   state.selectedLeagueId = leagueId;
   renderLeaguesBar();
 
-  // Load teams for this league
   elements.teamSelect.innerHTML = '<option value="">Cargando equipos...</option>';
   try {
     const res = await fetch(`/api/leagues/${leagueId}/teams`);
@@ -293,6 +608,7 @@ async function selectLeague(leagueId) {
     if (data.success && data.teams && data.teams.length > 0) {
       state.teams = data.teams;
       renderTeamSelect();
+      updateScoutingTeamFilterOptions();
       let defaultTeam = state.teams.find(t => t.id === 2829) || state.teams[0];
       state.selectedTeamId = defaultTeam.id;
       elements.teamSelect.value = state.selectedTeamId;
@@ -316,7 +632,6 @@ function renderTeamSelect() {
   });
 }
 
-// 4. Load Team Squad
 async function loadTeamSquad(teamId) {
   if (!teamId) return;
 
@@ -331,7 +646,7 @@ async function loadTeamSquad(teamId) {
   elements.tableLoadingState.classList.remove('hidden');
 
   try {
-    const res = await fetch(`/api/teams/${teamId}/stats`);
+    const res = await fetch(`/api/teams/${teamId}/stats?t=${Date.now()}`);
     const data = await res.json();
     elements.tableLoadingState.classList.add('hidden');
 
@@ -339,20 +654,19 @@ async function loadTeamSquad(teamId) {
       state.players = data.players;
       elements.playersCountBadge.textContent = `${state.players.length} jugadores`;
       renderSquadTable();
+    } else {
+      elements.squadTableBody.innerHTML = `<tr><td colspan="18" class="py-12 text-center text-slate-400">No se pudieron cargar las estadísticas del equipo.</td></tr>`;
     }
   } catch (e) {
     elements.tableLoadingState.classList.add('hidden');
-    console.error('Error loading squad stats:', e);
+    elements.squadTableBody.innerHTML = `<tr><td colspan="18" class="py-12 text-center text-red-400">Error de conexión al cargar el equipo.</td></tr>`;
   }
 }
 
-// 5. Render Squad Table with Sorting and Position Filter
 function renderSquadTable() {
   elements.squadTableBody.innerHTML = '';
 
   let filtered = [...state.players];
-
-  // Filter by position
   if (state.positionFilter !== 'ALL') {
     filtered = filtered.filter(p => {
       const pos = (p.position || '').toUpperCase();
@@ -364,7 +678,6 @@ function renderSquadTable() {
     });
   }
 
-  // Sort criteria
   const isSofa = state.metric === 'sofascore';
   filtered.sort((a, b) => {
     const aStats = a.stats?.windows || {};
@@ -449,74 +762,26 @@ function renderSquadTable() {
       <td class="val-center">${w.last12m?.totalGoals ?? 0} / ${w.last12m?.totalAssists ?? 0}</td>
 
       <td class="val-center">
-        <button class="action-btn-sm" onclick="openPlayerModal(${player.id}, '${player.position}')">Ver Ficha</button>
+        <button class="action-btn-sm" onclick="event.stopPropagation(); openPlayerModal(${player.id}, '${player.position}')">Ver Ficha</button>
       </td>
     `;
 
-    tr.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('action-btn-sm')) {
-        openPlayerModal(player.id, player.position);
-      }
-    });
-
+    tr.addEventListener('click', () => openPlayerModal(player.id, player.position));
     elements.squadTableBody.appendChild(tr);
   });
 }
 
-// 6. Player Search
-async function searchPlayers(q) {
-  try {
-    const res = await fetch(`/api/players/search?q=${encodeURIComponent(q)}`);
-    const data = await res.json();
-    elements.searchSpinner.classList.add('hidden');
+// ==========================================================================
+// 5. PLAYER MODAL & TACTICAL EVALUATION
+// ==========================================================================
 
-    if (data.success && data.results) {
-      renderSearchResults(data.results);
-    }
-  } catch (e) {
-    elements.searchSpinner.classList.add('hidden');
-    console.error('Search error:', e);
-  }
-}
-
-function renderSearchResults(players) {
-  elements.searchResultsDropdown.innerHTML = '';
-  if (players.length === 0) {
-    elements.searchResultsDropdown.innerHTML = `<div style="padding: 12px; color: var(--text-muted); font-size: 0.85rem;">No se encontraron jugadores.</div>`;
-    elements.searchResultsDropdown.classList.remove('hidden');
-    return;
-  }
-
-  players.slice(0, 10).forEach(p => {
-    const item = document.createElement('div');
-    item.className = 'search-item';
-    item.innerHTML = `
-      <img class="search-item-photo" src="${p.photo}" onerror="this.src='https://api.sofascore.app/static/images/silhouette.png'">
-      <div class="search-item-info">
-        <div class="search-item-name">${p.name}</div>
-        <div class="search-item-team">${p.team?.name || 'Equipo nacional'}</div>
-      </div>
-      <span class="search-item-pos">${p.position}</span>
-    `;
-    item.addEventListener('click', () => {
-      elements.searchResultsDropdown.classList.add('hidden');
-      elements.searchInput.value = '';
-      openPlayerModal(p.id, p.position);
-    });
-    elements.searchResultsDropdown.appendChild(item);
-  });
-
-  elements.searchResultsDropdown.classList.remove('hidden');
-}
-
-// 7. Open Player Modal (Reproducing Screenshot)
 async function openPlayerModal(playerId, position = 'F') {
   elements.playerModal.classList.remove('hidden');
   elements.modalLoading.classList.remove('hidden');
   elements.modalContent.classList.add('hidden');
 
   try {
-    const res = await fetch(`/api/players/${playerId}/stats?pos=${position}`);
+    const res = await fetch(`/api/players/${playerId}/stats?pos=${position}&t=${Date.now()}`);
     const data = await res.json();
     elements.modalLoading.classList.add('hidden');
 
@@ -549,6 +814,9 @@ function renderModalContent(data) {
   // Update window values
   updateModalStatsValues();
 
+  // Update tactical evaluation in modal
+  updateModalTacticalView();
+
   // 12M Sofascore Rating Badge (as shown in screenshot)
   const avg12m = w.last12m?.avgRating || stats.windows?.overall?.avgRating || 0;
   elements.sofaAverage12mBadge.textContent = avg12m ? avg12m.toFixed(2) : '-';
@@ -560,6 +828,37 @@ function renderModalContent(data) {
   renderMatchesHistory(stats.recentMatches || []);
 
   elements.modalContent.classList.remove('hidden');
+}
+
+function updateModalTacticalView() {
+  if (!state.activePlayerStats) return;
+  const tactical = state.activePlayerStats.tactical;
+  if (!tactical || !tactical.evaluations) return;
+
+  const currentEval = tactical.evaluations[state.modalTacticalWindow] || tactical.evaluations.last3m;
+  if (!currentEval) return;
+
+  elements.modalTacticalIcon.textContent = currentEval.roleIcon || '🎯';
+  elements.modalTacticalRoleName.textContent = currentEval.roleName;
+  elements.modalTacticalComplianceBadge.className = currentEval.badgeClass;
+  elements.modalTacticalComplianceBadge.textContent = currentEval.badgeLabel;
+
+  elements.modalTacticalCriteriaGrid.innerHTML = '';
+  (currentEval.criteria || []).forEach(c => {
+    const item = document.createElement('div');
+    item.className = `modal-criteria-item ${c.passed ? 'passed' : ''}`;
+    item.innerHTML = `
+      <div class="modal-criteria-head">
+        <span>${c.label}</span>
+        <span>${c.passed ? '✅ Superado' : '❌ No supera'}</span>
+      </div>
+      <div class="modal-criteria-val" style="color: ${c.passed ? '#00d66c' : '#94a3b8'};">
+        ${c.displayValue}
+      </div>
+      <div class="modal-criteria-target">Meta: <strong>${c.thresholdDisplay}</strong></div>
+    `;
+    elements.modalTacticalCriteriaGrid.appendChild(item);
+  });
 }
 
 function updateModalStatsValues() {
@@ -593,7 +892,6 @@ function updateModalStatsValues() {
   updateCard(elements.pj_12m, elements.rating_12m_val, elements.goals_12m_val, elements.goals_avg_12m, elements.assists_12m_val, elements.min_12m_val, w.last12m);
 }
 
-// 8. Render Monthly Bar Chart (Screenshot Match)
 function renderMonthlyBarChart(monthlyData) {
   elements.monthlyBarsChart.innerHTML = '';
 
@@ -602,7 +900,6 @@ function renderMonthlyBarChart(monthlyData) {
     return;
   }
 
-  // Max rating scale is typically 10.0
   const maxRating = 10.0;
   const maxHeightPx = 130;
 
@@ -619,34 +916,36 @@ function renderMonthlyBarChart(monthlyData) {
       <div class="bar-fill" style="height: ${heightPx}px; background-color: ${m.color};" title="${m.fullName}: ${hasData ? m.averageRating + ' nota media (' + m.matchesCount + ' partidos)' : 'Sin partidos'}"></div>
       <span class="month-label">${m.name}</span>
     `;
-
     elements.monthlyBarsChart.appendChild(col);
   });
 }
 
-// 9. Render Matches History Table
 function renderMatchesHistory(matches) {
   elements.matchesHistoryTableBody.innerHTML = '';
-  if (matches.length === 0) {
-    elements.matchesHistoryTableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">No hay partidos recientes registrados.</td></tr>`;
+
+  if (!matches || matches.length === 0) {
+    elements.matchesHistoryTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">No hay partidos registrados recientemente.</td></tr>';
     return;
   }
 
+  const isSofa = state.metric === 'sofascore';
+
   matches.forEach(m => {
     const tr = document.createElement('tr');
-    const sofaClass = getRatingClass(m.rating);
-    const biwClass = getBiwengerClass(m.biwengerPoints);
+    const score = isSofa ? m.rating : m.biwengerPoints;
+    const scoreFormatted = score !== null ? score.toFixed(isSofa ? 1 : 0) : '-';
+    const scoreCls = isSofa ? getRatingClass(m.rating) : getBiwengerClass(m.biwengerPoints);
+
+    const scoreDisplay = `${m.homeScore ?? '-'} - ${m.awayScore ?? '-'}`;
 
     tr.innerHTML = `
-      <td>${m.date}</td>
-      <td style="color: var(--text-secondary);">${m.tournament}</td>
-      <td style="font-weight: 600;">${m.homeTeam} ${m.homeScore !== null ? m.homeScore : ''} - ${m.awayScore !== null ? m.awayScore : ''} ${m.awayTeam}</td>
+      <td>${m.date || '-'}</td>
+      <td><span style="color: var(--text-secondary); font-size: 0.8rem;">${m.tournament || 'Competición'}</span></td>
+      <td><strong>${m.homeTeam}</strong> vs <strong>${m.awayTeam}</strong></td>
+      <td class="val-center"><span style="font-weight: 700;">${scoreDisplay}</span></td>
       <td class="val-center">${m.minutesPlayed}'</td>
-      <td class="val-center" style="font-weight: 700; color: ${m.goals > 0 ? 'var(--sofascore-green)' : 'inherit'}">${m.goals}</td>
-      <td class="val-center">${m.assists}</td>
-      <td class="val-center">${m.yellowCards > 0 ? '🟨 ' + m.yellowCards : ''} ${m.redCards > 0 ? '🟥' : ''}</td>
-      <td class="val-center"><span class="score-badge ${sofaClass}">${m.rating !== null ? m.rating.toFixed(1) : '-'}</span></td>
-      <td class="val-center"><span class="score-badge ${biwClass}">${m.rating !== null ? m.biwengerPoints : '-'}</span></td>
+      <td class="val-center">${m.goals > 0 ? `<span style="color: #00d66c; font-weight: 700;">${m.goals}</span>` : '0'} / ${m.assists > 0 ? `<span style="color: #38bdf8; font-weight: 700;">${m.assists}</span>` : '0'}</td>
+      <td class="val-center"><span class="score-badge ${scoreCls}">${scoreFormatted}</span></td>
     `;
     elements.matchesHistoryTableBody.appendChild(tr);
   });
@@ -657,45 +956,103 @@ function closeModal() {
   state.activePlayerStats = null;
 }
 
-// 10. Live Matches Tracker
+// ==========================================================================
+// 6. SEARCH & LIVE TRACKING
+// ==========================================================================
+
+async function searchPlayers(q) {
+  try {
+    const res = await fetch(`/api/players/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    elements.searchSpinner.classList.add('hidden');
+
+    if (data.success && data.results) {
+      renderSearchResults(data.results);
+    }
+  } catch (e) {
+    elements.searchSpinner.classList.add('hidden');
+    console.error('Search error:', e);
+  }
+}
+
+function renderSearchResults(results) {
+  elements.searchResultsDropdown.innerHTML = '';
+  if (results.length === 0) {
+    elements.searchResultsDropdown.innerHTML = '<div class="search-result-item" style="color: var(--text-muted);">No se encontraron jugadores</div>';
+    elements.searchResultsDropdown.classList.remove('hidden');
+    return;
+  }
+
+  results.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'search-result-item';
+    item.innerHTML = `
+      <img src="${p.photo}" alt="${p.name}" class="search-item-photo" onerror="this.src='https://api.sofascore.app/static/images/silhouette.png'">
+      <div class="search-item-info">
+        <span class="search-item-name">${p.name}</span>
+        <span class="search-item-meta">${p.team?.name || ''} · ${getPositionName(p.position)}</span>
+      </div>
+    `;
+    item.addEventListener('click', () => {
+      elements.searchResultsDropdown.classList.add('hidden');
+      elements.searchInput.value = '';
+      openPlayerModal(p.id, p.position);
+    });
+    elements.searchResultsDropdown.appendChild(item);
+  });
+
+  elements.searchResultsDropdown.classList.remove('hidden');
+}
+
 async function checkLiveMatches() {
   try {
     const res = await fetch('/api/live');
     const data = await res.json();
-    if (data.success && data.matches) {
-      state.liveMatches = data.matches;
+    if (data.success && data.liveMatches) {
+      state.liveMatches = data.liveMatches;
       elements.liveCountBadge.textContent = state.liveMatches.length;
-      renderLiveMatches();
+      if (state.activeView === 'live') {
+        renderLiveMatchesGrid();
+      }
     }
   } catch (e) {
-    console.error('Error fetching live matches:', e);
+    console.error('Live polling error:', e);
   }
 }
 
-function renderLiveMatches() {
+function renderLiveMatchesGrid() {
   elements.liveMatchesGrid.innerHTML = '';
+
   if (state.liveMatches.length === 0) {
-    elements.liveMatchesGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">No hay partidos en juego en este momento.</div>`;
+    elements.liveMatchesGrid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 48px; color: var(--text-muted);">
+        <p style="font-size: 1.1rem; margin-bottom: 8px;">No hay partidos en juego en este momento.</p>
+        <span style="font-size: 0.85rem;">Las notas de Sofascore se actualizarán en vivo automáticamente cuando comiencen los partidos.</span>
+      </div>
+    `;
     return;
   }
 
-  state.liveMatches.slice(0, 20).forEach(m => {
+  state.liveMatches.forEach(m => {
     const card = document.createElement('div');
-    card.className = 'live-card';
+    card.className = 'live-match-card';
     card.innerHTML = `
-      <div class="live-card-meta">
-        <span class="live-tournament">${m.tournament || 'Fútbol'}</span>
-        <span class="live-status-pill">${m.status}</span>
+      <div class="live-match-header">
+        <span class="tournament-tag">${m.tournament || 'Fútbol'}</span>
+        <span class="live-minute"><span class="live-pulse"></span> ${m.minute || 'En juego'}</span>
       </div>
-      <div class="live-teams-board">
+      <div class="live-match-teams">
         <div class="live-team-row">
           <span class="live-team-name">${m.homeTeam.name}</span>
-          <span class="live-team-score">${m.homeTeam.score}</span>
+          <span class="live-score-val">${m.homeTeam.score}</span>
         </div>
         <div class="live-team-row">
           <span class="live-team-name">${m.awayTeam.name}</span>
-          <span class="live-team-score">${m.awayTeam.score}</span>
+          <span class="live-score-val">${m.awayTeam.score}</span>
         </div>
+      </div>
+      <div class="live-card-footer">
+        <span>Click para ver alineaciones y notas en vivo</span>
       </div>
     `;
 

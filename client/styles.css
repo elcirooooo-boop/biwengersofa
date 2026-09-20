@@ -1181,3 +1181,318 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   TACTICAL SCOUTING SYSTEM STYLES
+   ========================================================================== */
+
+.scouting-roles-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.section-label-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-sublabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.roles-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.role-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.role-chip:hover {
+  background-color: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.role-chip.active {
+  background: linear-gradient(135deg, rgba(0, 214, 108, 0.15), rgba(16, 185, 129, 0.05));
+  border-color: #00d66c;
+  color: var(--text-primary);
+  box-shadow: 0 0 15px rgba(0, 214, 108, 0.2);
+}
+
+.role-chip-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.role-chip-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-chip-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.role-chip-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Window Chips */
+.window-chips {
+  display: flex;
+  gap: 6px;
+}
+
+.window-chip {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.window-chip:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.window-chip.active {
+  background: #00d66c;
+  border-color: #00d66c;
+  color: #0d131f;
+  font-weight: 700;
+}
+
+/* Criteria Summary Banner */
+.criteria-summary-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.criteria-card-item {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #00d66c;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.criteria-card-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.criteria-card-target {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #00d66c;
+}
+
+.criteria-card-desc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+/* Compliance Badges */
+.badge-compliance-full {
+  background: rgba(0, 214, 108, 0.18);
+  border: 1px solid #00d66c;
+  color: #00d66c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-compliance-partial {
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-compliance-low {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Metric Cell Styling */
+.metric-val-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.metric-val-passed {
+  color: #00d66c;
+  background: rgba(0, 214, 108, 0.1);
+  border: 1px solid rgba(0, 214, 108, 0.25);
+}
+
+.metric-val-failed {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.metric-check {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Tactical Modal Card */
+.tactical-modal-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.tactical-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.tactical-title-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #00d66c;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.tactical-role-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-tactical-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.modal-tab-chip {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-tab-chip.active {
+  background: #00d66c;
+  color: #0d131f;
+  border-color: #00d66c;
+  font-weight: 700;
+}
+
+.modal-criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.modal-criteria-item {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-criteria-item.passed {
+  border-color: rgba(0, 214, 108, 0.4);
+  background: rgba(0, 214, 108, 0.05);
+}
+
+.modal-criteria-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.modal-criteria-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-criteria-target {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+

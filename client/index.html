@@ -46,9 +46,13 @@
           </div>
 
           <div class="view-switch-group">
-            <button id="viewStatsBtn" class="view-tab-btn active">
+            <button id="viewScoutingBtn" class="view-tab-btn active">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+              Scouting por Posición (Total Liga)
+            </button>
+            <button id="viewStatsBtn" class="view-tab-btn">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4 9h4v11H4zm6-5h4v16h-4zm6 8h4v8h-4z"/></svg>
-              Ligas & Equipos
+              Por Equipo
             </button>
             <button id="viewLiveBtn" class="view-tab-btn">
               <span class="live-pulse"></span>
@@ -62,8 +66,134 @@
     <!-- Main Content Container -->
     <main class="main-content">
       
-      <!-- STATS VIEW -->
-      <section id="statsView" class="view-section">
+      <!-- SCOUTING VIEW (Posición y Criterios Tácticos en Total de la Liga) -->
+      <section id="scoutingView" class="view-section">
+        
+        <!-- Tactical Role Selector Bar -->
+        <div class="scouting-roles-card">
+          <div class="section-label-row">
+            <span class="section-label">🎯 Roles Tácticos de Scouting</span>
+            <span class="section-sublabel">Evalúa a todos los jugadores de LaLiga frente a los requisitos específicos de su posición</span>
+          </div>
+          
+          <div id="scoutingRolesBar" class="roles-chips-grid">
+            <button class="role-chip active" data-role="PIVOTE">
+              <span class="role-chip-icon">🧠</span>
+              <div class="role-chip-text">
+                <span class="role-chip-name">Pivote / Interior</span>
+                <span class="role-chip-sub">Organizador de juego</span>
+              </div>
+            </button>
+            <button class="role-chip" data-role="CENTRAL">
+              <span class="role-chip-icon">🛡️</span>
+              <div class="role-chip-text">
+                <span class="role-chip-name">Defensa Central</span>
+                <span class="role-chip-sub">Con salida de balón</span>
+              </div>
+            </button>
+            <button class="role-chip" data-role="LATERAL">
+              <span class="role-chip-icon">⚡</span>
+              <div class="role-chip-text">
+                <span class="role-chip-name">Lateral / Carrilero</span>
+                <span class="role-chip-sub">Profundo y centros</span>
+              </div>
+            </button>
+            <button class="role-chip" data-role="EXTREMO">
+              <span class="role-chip-icon">🎯</span>
+              <div class="role-chip-text">
+                <span class="role-chip-name">Extremo / Mediapunta</span>
+                <span class="role-chip-sub">Desequilibrio y remate</span>
+              </div>
+            </button>
+            <button class="role-chip" data-role="PORTERO">
+              <span class="role-chip-icon">🧤</span>
+              <div class="role-chip-text">
+                <span class="role-chip-name">Portero</span>
+                <span class="role-chip-sub">Paradas en área</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scouting Controls Bar (Ventana Temporal & Filtros) -->
+        <div class="filter-controls-card">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Ventana Temporal:</label>
+              <div class="window-chips" id="scoutingWindowChips">
+                <button class="window-chip active" data-window="3m">Últimos 3 Meses</button>
+                <button class="window-chip" data-window="6m">Últimos 6 Meses</button>
+                <button class="window-chip" data-window="12m">Últimos 12 Meses</button>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label for="scoutingTeamFilter">Filtrar por Equipo:</label>
+              <select id="scoutingTeamFilter" class="custom-select">
+                <option value="ALL">Todos los equipos de LaLiga</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="scoutingComplianceFilter">Cumplimiento:</label>
+              <select id="scoutingComplianceFilter" class="custom-select">
+                <option value="ALL">Todos los estados</option>
+                <option value="full">✅ Cumple todos los requisitos</option>
+                <option value="partial">⚠️ Casi cumple</option>
+                <option value="low">❌ No cumple</option>
+              </select>
+            </div>
+
+            <div class="filter-group ml-auto">
+              <label for="scoutingSortSelect">Ordenar por:</label>
+              <select id="scoutingSortSelect" class="custom-select">
+                <option value="compliance">Mayor Cumplimiento</option>
+                <option value="rating">Mayor Nota Media</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role Criteria Summary Box (Direct from User Image) -->
+        <div id="criteriaSummaryBanner" class="criteria-summary-card">
+          <!-- Dynamically populated criteria boxes -->
+        </div>
+
+        <!-- Scouting League Ranking Table Container -->
+        <div class="table-card">
+          <div class="table-header-info">
+            <div class="table-title">
+              <span id="scoutingRoleTitleIcon" style="font-size: 20px;">🧠</span>
+              <span id="scoutingRoleTitle">Ranking de Pivotes / Interiores Organizadores</span>
+              <span id="scoutingTotalBadge" class="count-pill">0 jugadores en LaLiga</span>
+            </div>
+            <div class="table-legend">
+              <span class="legend-badge badge-compliance-full">✅ Cumple Requisitos</span>
+              <span class="legend-badge badge-compliance-partial">⚠️ Casi Cumple</span>
+              <span class="legend-badge badge-compliance-low">❌ No Cumple</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="stats-table" id="scoutingTable">
+              <thead id="scoutingTableHead">
+                <!-- Dynamically populated based on active role -->
+              </thead>
+              <tbody id="scoutingTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="scoutingLoadingState" class="table-loading-state hidden">
+            <div class="spinner"></div>
+            <span>Evaluando jugadores en toda LaLiga...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- STATS VIEW (Por Equipo) -->
+      <section id="statsView" class="view-section hidden">
         <!-- League Selector Chips -->
         <div class="leagues-bar-container">
           <div class="section-label">Ligas Disponibles</div>
@@ -360,6 +490,32 @@
                 <div><span>Asist.:</span> <strong id="assists_12m_val">0</strong></div>
                 <div><span>Min/P:</span> <strong id="min_12m_val">0'</strong></div>
               </div>
+            </div>
+          <!-- TACTICAL EVALUATION IN MODAL -->
+          <div class="tactical-modal-card">
+            <div class="tactical-card-header">
+              <div class="tactical-title-group">
+                <span class="tactical-title-label">EVALUACIÓN TÁCTICA DE SCOUTING</span>
+                <div class="tactical-role-badge">
+                  <span id="modalTacticalIcon">🧠</span>
+                  <span id="modalTacticalRoleName">Pivote / Interior organizador</span>
+                </div>
+              </div>
+              <div id="modalTacticalComplianceBadge" class="badge-compliance-full">
+                Cumple (4/4)
+              </div>
+            </div>
+
+            <!-- Modal Tactical Window Chips -->
+            <div class="modal-tactical-tabs" id="modalTacticalTabs">
+              <button class="modal-tab-chip active" data-window="last3m">3 Meses</button>
+              <button class="modal-tab-chip" data-window="last6m">6 Meses</button>
+              <button class="modal-tab-chip" data-window="last12m">12 Meses</button>
+            </div>
+
+            <!-- Checklist of Criteria in Modal -->
+            <div id="modalTacticalCriteriaGrid" class="modal-criteria-grid">
+              <!-- Dynamically populated -->
             </div>
           </div>
 

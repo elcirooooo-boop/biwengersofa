@@ -133,7 +133,11 @@ function findPlayerFallback(playerId) {
   const pIdStr = String(playerId);
   if (pIdStr === '826643') {
     try {
-      return require('./data/player_826643.json');
+      const mbappe = require('./data/player_826643.json');
+      return {
+        ...mbappe,
+        tactical: calculator.buildPlayerTacticalProfiles(mbappe.player || { position: 'F', stats: mbappe.stats })
+      };
     } catch (e) {}
   }
 
@@ -153,7 +157,8 @@ function findPlayerFallback(playerId) {
             sofascoreId: found.sofascoreId,
             team: { name: found.teamName || 'Equipo' }
           },
-          stats: found.stats
+          stats: found.stats,
+          tactical: found.tactical || calculator.buildPlayerTacticalProfiles(found)
         };
       }
     } catch (e) {}
@@ -176,24 +181,119 @@ app.get('/api/players/:playerId/stats', async (req, res) => {
 
     if (eventsData && eventsData.events && eventsData.events.length > 0) {
       const stats = calculator.calculatePlayerStats(eventsData, position);
+      const tactical = calculator.buildPlayerTacticalProfiles({ position, stats });
       return res.json({
         success: true,
         player: playerDetails,
-        stats
+        stats,
+        tactical
       });
     }
 
     const fallback = findPlayerFallback(playerId);
     if (fallback) return res.json(fallback);
 
+    const emptyStats = calculator.calculatePlayerStats({ events: [], statistics: {}, incidents: {} }, position);
     res.json({
       success: true,
       player: playerDetails,
-      stats: calculator.calculatePlayerStats({ events: [], statistics: {}, incidents: {} }, position)
+      stats: emptyStats,
+      tactical: calculator.buildPlayerTacticalProfiles({ position, stats: emptyStats })
     });
   } catch (err) {
     const fallback = findPlayerFallback(playerId);
     if (fallback) return res.json(fallback);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5.1 Scouting: Get Tactical Roles & Criteria
+app.get('/api/scouting/roles', (req, res) => {
+  try {
+    res.json({ success: true, roles: calculator.getRolesDefinitions() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5.2 Scouting: Get League-Wide Ranking by Tactical Role (3M, 6M, 12M)
+app.get('/api/scouting/rankings', (req, res) => {
+  try {
+    const roleId = (req.query.role || 'PIVOTE').toUpperCase();
+    const windowKey = req.query.window === '6m' ? 'last6m' : req.query.window === '12m' ? 'last12m' : 'last3m';
+    const minMatches = parseInt(req.query.minMatches || '1', 10);
+
+    const roles = calculator.getRolesDefinitions();
+    const roleDef = roles[roleId] || roles.PIVOTE;
+
+    // Map teams info
+    let laligaTeams = [];
+    try {
+      laligaTeams = require('./data/laliga_teams.json');
+    } catch (e) {}
+    const teamsMap = new Map();
+    laligaTeams.forEach(t => teamsMap.set(String(t.id), t));
+
+    const allEvaluated = [];
+
+    for (const [teamId, loader] of Object.entries(TEAM_STATS_MAP)) {
+      try {
+        const players = loader();
+        const teamInfo = teamsMap.get(String(teamId)) || { name: 'Equipo', logo: '' };
+
+        players.forEach(p => {
+          const pos = (p.position || 'M').toUpperCase();
+          const applies = roleDef.applicablePositions.includes(pos);
+          if (!applies) return;
+
+          const evalResult = calculator.evaluatePlayerTactical(p, windowKey, roleId);
+          if (evalResult.matchesCount < minMatches) return;
+
+          allEvaluated.push({
+            id: p.id,
+            name: p.name,
+            shortName: p.shortName || p.name,
+            photo: p.photo || `https://api.sofascore.app/api/v1/player/${p.id}/image`,
+            position: p.position,
+            jerseyNumber: p.jerseyNumber,
+            country: p.country,
+            teamId,
+            teamName: teamInfo.name,
+            teamLogo: teamInfo.logo,
+            matchesCount: evalResult.matchesCount,
+            avgRating: evalResult.avgRating,
+            passedCount: evalResult.passedCount,
+            totalCount: evalResult.totalCount,
+            compliancePct: evalResult.compliancePct,
+            status: evalResult.status,
+            badgeClass: evalResult.badgeClass,
+            badgeLabel: evalResult.badgeLabel,
+            criteria: evalResult.criteria,
+            metricValues: evalResult.criteria.reduce((acc, c) => {
+              acc[c.id] = c.value;
+              return acc;
+            }, {})
+          });
+        });
+      } catch (e) {}
+    }
+
+    // Sort: 1) passedCount desc, 2) avgRating desc
+    allEvaluated.sort((a, b) => {
+      if (b.passedCount !== a.passedCount) {
+        return b.passedCount - a.passedCount;
+      }
+      return (b.avgRating || 0) - (a.avgRating || 0);
+    });
+
+    res.json({
+      success: true,
+      role: roleDef,
+      window: windowKey,
+      totalPlayers: allEvaluated.length,
+      players: allEvaluated
+    });
+  } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -205,8 +305,12 @@ app.get('/api/teams/:teamId/stats', async (req, res) => {
   // 1. Direct match for pre-calculated team files (bundled via TEAM_STATS_MAP)
   if (TEAM_STATS_MAP[teamId]) {
     try {
-      const teamData = TEAM_STATS_MAP[teamId]();
+      let teamData = TEAM_STATS_MAP[teamId]();
       if (teamData && teamData.length > 0) {
+        teamData = teamData.map(p => ({
+          ...p,
+          tactical: p.tactical || calculator.buildPlayerTacticalProfiles(p)
+        }));
         return res.json({ success: true, players: teamData });
       }
     } catch (e) {}
