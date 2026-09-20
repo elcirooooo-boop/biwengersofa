@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SofaBiwenger - Promedios Sofascore & Biwenger en Tiempo Real</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Navbar Header -->
+    <header class="navbar">
+      <div class="nav-container">
+        <div class="brand">
+          <div class="brand-badge">
+            <span class="brand-sofa">Sofa</span><span class="brand-biwenger">Biwenger</span>
+          </div>
+          <span class="brand-tagline">Stats & Promedios en Vivo</span>
+        </div>
+
+        <!-- Global Search Bar -->
+        <div class="search-wrapper">
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="playerSearchInput" placeholder="Buscar jugador (ej. Mbappé, Bellingham, Vinícius)..." autocomplete="off">
+            <div id="searchSpinner" class="spinner-sm hidden"></div>
+          </div>
+          <div id="searchResultsDropdown" class="search-dropdown hidden"></div>
+        </div>
+
+        <!-- Metric Switcher & Navigation -->
+        <div class="nav-controls">
+          <div class="metric-toggle-group">
+            <button id="toggleSofascore" class="metric-btn active" title="Mostrar notas de 0 a 10">
+              <span class="dot sofa-dot"></span> Nota Sofascore
+            </button>
+            <button id="toggleBiwenger" class="metric-btn" title="Mostrar puntos calculados oficiales Biwenger">
+              <span class="dot biwenger-dot"></span> Puntos Biwenger
+            </button>
+          </div>
+
+          <div class="view-switch-group">
+            <button id="viewStatsBtn" class="view-tab-btn active">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4 9h4v11H4zm6-5h4v16h-4zm6 8h4v8h-4z"/></svg>
+              Ligas & Equipos
+            </button>
+            <button id="viewLiveBtn" class="view-tab-btn">
+              <span class="live-pulse"></span>
+              En Directo <span id="liveCountBadge" class="live-badge">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+      
+      <!-- STATS VIEW -->
+      <section id="statsView" class="view-section">
+        <!-- League Selector Chips -->
+        <div class="leagues-bar-container">
+          <div class="section-label">Ligas Disponibles</div>
+          <div id="leaguesBar" class="leagues-bar">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Team Selector & Filters Bar -->
+        <div class="filter-controls-card">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="teamSelect">Equipo:</label>
+              <select id="teamSelect" class="custom-select">
+                <option value="">Cargando equipos...</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Posición:</label>
+              <div class="position-chips">
+                <button class="pos-chip active" data-pos="ALL">Todos</button>
+                <button class="pos-chip" data-pos="POR">Porteros</button>
+                <button class="pos-chip" data-pos="DEF">Defensas</button>
+                <button class="pos-chip" data-pos="MED">Medios</button>
+                <button class="pos-chip" data-pos="DEL">Delanteros</button>
+              </div>
+            </div>
+
+            <div class="filter-group ml-auto">
+              <label for="sortSelect">Ordenar por:</label>
+              <select id="sortSelect" class="custom-select">
+                <option value="rating_1m">Mayor Promedio (Último 1 Mes)</option>
+                <option value="rating_2m">Mayor Promedio (Últimos 2 Meses)</option>
+                <option value="rating_3m">Mayor Promedio (Últimos 3 Meses)</option>
+                <option value="rating_6m">Mayor Promedio (Últimos 6 Meses)</option>
+                <option value="rating_12m">Mayor Promedio (Últimos 12 Meses)</option>
+                <option value="goals_1m">Más Goles (1 Mes)</option>
+                <option value="goals_2m">Más Goles (2 Meses)</option>
+                <option value="goals_3m">Más Goles (3 Meses)</option>
+                <option value="goals_12m">Más Goles (12 Meses)</option>
+              </select>
+            </div>
+
+            <button id="refreshTeamBtn" class="refresh-btn" title="Actualizar datos">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              Recargar
+            </button>
+          </div>
+        </div>
+
+        <!-- Squad Stats Table Container -->
+        <div class="table-card">
+          <div class="table-header-info">
+            <div class="table-title">
+              <img id="currentTeamLogo" class="team-logo-sm hidden" src="" alt="">
+              <span id="currentTeamTitle">Plantilla del Equipo</span>
+              <span id="playersCountBadge" class="count-pill">0 jugadores</span>
+            </div>
+            <div class="table-legend">
+              <span class="legend-badge legend-green">≥ 7.5 (Excelente)</span>
+              <span class="legend-badge legend-yellow">6.8 - 7.4 (Notable)</span>
+              <span class="legend-badge legend-orange">6.0 - 6.7 (Regular)</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="stats-table" id="squadTable">
+              <thead>
+                <tr>
+                  <th class="th-player">Jugador</th>
+                  <th class="th-center">Pos</th>
+                  <!-- 1 Mes -->
+                  <th class="th-group-1m" colspan="3">
+                    <span class="badge-time">Último 1 Mes</span>
+                  </th>
+                  <!-- 2 Meses -->
+                  <th class="th-group-2m" colspan="3">
+                    <span class="badge-time">Últimos 2 Meses</span>
+                  </th>
+                  <!-- 3 Meses -->
+                  <th class="th-group-3m" colspan="3">
+                    <span class="badge-time">Últimos 3 Meses</span>
+                  </th>
+                  <!-- 6 Meses -->
+                  <th class="th-group-6m" colspan="3">
+                    <span class="badge-time">Últimos 6 Meses</span>
+                  </th>
+                  <!-- 12 Meses -->
+                  <th class="th-group-12m" colspan="3">
+                    <span class="badge-time">Últimos 12 Meses</span>
+                  </th>
+                  <th class="th-center">Acción</th>
+                </tr>
+                <tr class="sub-headers">
+                  <th></th>
+                  <th></th>
+                  <!-- 1M -->
+                  <th class="th-sub" title="Partidos Jugados">PJ</th>
+                  <th class="th-sub th-highlight current-metric-name">Nota</th>
+                  <th class="th-sub" title="Goles / Asistencias">G / A</th>
+                  <!-- 2M -->
+                  <th class="th-sub" title="Partidos Jugados">PJ</th>
+                  <th class="th-sub th-highlight current-metric-name">Nota</th>
+                  <th class="th-sub" title="Goles / Asistencias">G / A</th>
+                  <!-- 3M -->
+                  <th class="th-sub" title="Partidos Jugados">PJ</th>
+                  <th class="th-sub th-highlight current-metric-name">Nota</th>
+                  <th class="th-sub" title="Goles / Asistencias">G / A</th>
+                  <!-- 6M -->
+                  <th class="th-sub" title="Partidos Jugados">PJ</th>
+                  <th class="th-sub th-highlight current-metric-name">Nota</th>
+                  <th class="th-sub" title="Goles / Asistencias">G / A</th>
+                  <!-- 12M -->
+                  <th class="th-sub" title="Partidos Jugados">PJ</th>
+                  <th class="th-sub th-highlight current-metric-name">Nota</th>
+                  <th class="th-sub" title="Goles / Asistencias">G / A</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="squadTableBody">
+                <!-- Rows injected dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="tableLoadingState" class="loading-state hidden">
+            <div class="spinner-large"></div>
+            <p>Obteniendo datos de Sofascore y calculando promedios temporales...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE VIEW -->
+      <section id="liveView" class="view-section hidden">
+        <div class="live-header-bar">
+          <div class="live-title-area">
+            <span class="live-pulse"></span>
+            <h2>Partidos de Fútbol en Directo</h2>
+            <span class="live-sub">Valoraciones de jugadores actualizándose en tiempo real</span>
+          </div>
+          <button id="refreshLiveBtn" class="refresh-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Actualizar ahora
+          </button>
+        </div>
+
+        <div id="liveMatchesGrid" class="live-grid">
+          <!-- Live match cards -->
+        </div>
+
+        <!-- Live Match Lineup Drawer / Details -->
+        <div id="liveMatchDetails" class="live-match-details hidden">
+          <div class="live-details-header">
+            <h3 id="liveMatchTitle">Alineaciones y Puntuaciones en Vivo</h3>
+            <button id="closeLiveDetailsBtn" class="close-btn">&times;</button>
+          </div>
+          <div id="liveLineupsContainer" class="live-lineups-container">
+            <!-- Lineups with real-time ratings -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- PLAYER DETAILS MODAL (Exact design inspired by Sofascore screenshot) -->
+    <div id="playerModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <button id="closeModalBtn" class="modal-close-btn" aria-label="Cerrar">&times;</button>
+        
+        <div id="modalLoading" class="modal-loading-indicator">
+          <div class="spinner-large"></div>
+          <p>Calculando promedios de 1M, 3M, 6M y 12M...</p>
+        </div>
+
+        <div id="modalContent" class="modal-content hidden">
+          <!-- Player Header (like in screenshot) -->
+          <div class="player-hero">
+            <div class="player-avatar-box">
+              <img id="modalPlayerPhoto" class="player-avatar-img" src="" alt="">
+            </div>
+            <div class="player-hero-meta">
+              <h2 id="modalPlayerName" class="player-name-title">Kylian Mbappé</h2>
+              <div class="player-team-line">
+                <span id="modalPlayerTeam" class="team-name">Real Madrid</span>
+                <span id="modalPlayerContract" class="contract-badge">Activo</span>
+              </div>
+              <div class="player-specs-grid">
+                <div class="spec-item">
+                  <span class="spec-label">Nacionalidad</span>
+                  <span id="modalPlayerCountry" class="spec-val">Francia</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Posición</span>
+                  <span id="modalPlayerPosition" class="spec-val">Delantero</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Dorsal</span>
+                  <span id="modalPlayerJersey" class="spec-val">#10</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Sofascore Player ID</span>
+                  <span id="modalPlayerSofaId" class="spec-val sofa-id-pill">uvk-fsn</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time Windows Cards Grid (1M, 3M, 6M, 12M) -->
+          <div class="windows-metrics-grid">
+            <!-- 1 Mes -->
+            <div class="window-metric-card">
+              <div class="window-card-header">
+                <span class="window-title">Último 1 Mes</span>
+                <span id="pj_1m" class="pj-pill">0 partidos</span>
+              </div>
+              <div class="window-main-val">
+                <span class="metric-type-label">Promedio:</span>
+                <span id="rating_1m_val" class="score-badge score-high">-</span>
+              </div>
+              <div class="window-sub-stats">
+                <div><span>Goles:</span> <strong id="goals_1m_val">0</strong> (<span id="goals_avg_1m">0.0</span>/p)</div>
+                <div><span>Asist.:</span> <strong id="assists_1m_val">0</strong></div>
+                <div><span>Min/P:</span> <strong id="min_1m_val">0'</strong></div>
+              </div>
+            </div>
+
+            <!-- 2 Meses -->
+            <div class="window-metric-card">
+              <div class="window-card-header">
+                <span class="window-title">Últimos 2 Meses</span>
+                <span id="pj_2m" class="pj-pill">0 partidos</span>
+              </div>
+              <div class="window-main-val">
+                <span class="metric-type-label">Promedio:</span>
+                <span id="rating_2m_val" class="score-badge score-high">-</span>
+              </div>
+              <div class="window-sub-stats">
+                <div><span>Goles:</span> <strong id="goals_2m_val">0</strong> (<span id="goals_avg_2m">0.0</span>/p)</div>
+                <div><span>Asist.:</span> <strong id="assists_2m_val">0</strong></div>
+                <div><span>Min/P:</span> <strong id="min_2m_val">0'</strong></div>
+              </div>
+            </div>
+
+            <!-- 3 Meses -->
+            <div class="window-metric-card">
+              <div class="window-card-header">
+                <span class="window-title">Últimos 3 Meses</span>
+                <span id="pj_3m" class="pj-pill">0 partidos</span>
+              </div>
+              <div class="window-main-val">
+                <span class="metric-type-label">Promedio:</span>
+                <span id="rating_3m_val" class="score-badge score-high">-</span>
+              </div>
+              <div class="window-sub-stats">
+                <div><span>Goles:</span> <strong id="goals_3m_val">0</strong> (<span id="goals_avg_3m">0.0</span>/p)</div>
+                <div><span>Asist.:</span> <strong id="assists_3m_val">0</strong></div>
+                <div><span>Min/P:</span> <strong id="min_3m_val">0'</strong></div>
+              </div>
+            </div>
+
+            <!-- 6 Meses -->
+            <div class="window-metric-card">
+              <div class="window-card-header">
+                <span class="window-title">Últimos 6 Meses</span>
+                <span id="pj_6m" class="pj-pill">0 partidos</span>
+              </div>
+              <div class="window-main-val">
+                <span class="metric-type-label">Promedio:</span>
+                <span id="rating_6m_val" class="score-badge score-high">-</span>
+              </div>
+              <div class="window-sub-stats">
+                <div><span>Goles:</span> <strong id="goals_6m_val">0</strong> (<span id="goals_avg_6m">0.0</span>/p)</div>
+                <div><span>Asist.:</span> <strong id="assists_6m_val">0</strong></div>
+                <div><span>Min/P:</span> <strong id="min_6m_val">0'</strong></div>
+              </div>
+            </div>
+
+            <!-- 12 Meses -->
+            <div class="window-metric-card highlight-card">
+              <div class="window-card-header">
+                <span class="window-title">Últimos 12 Meses</span>
+                <span id="pj_12m" class="pj-pill">0 partidos</span>
+              </div>
+              <div class="window-main-val">
+                <span class="metric-type-label">Promedio:</span>
+                <span id="rating_12m_val" class="score-badge score-high">-</span>
+              </div>
+              <div class="window-sub-stats">
+                <div><span>Goles:</span> <strong id="goals_12m_val">0</strong> (<span id="goals_avg_12m">0.0</span>/p)</div>
+                <div><span>Asist.:</span> <strong id="assists_12m_val">0</strong></div>
+                <div><span>Min/P:</span> <strong id="min_12m_val">0'</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RESUMEN (ÚLTIMOS 12 MESES) - EXACT CHART FROM SCREENSHOT -->
+          <div class="screenshot-chart-card">
+            <div class="chart-card-header">
+              <div class="chart-title-box">
+                <span class="chart-section-title">Resumen (Últimos 12 meses)</span>
+              </div>
+              <div class="chart-rating-banner">
+                <span class="rating-banner-label">Valoración Sofascore media</span>
+                <span id="sofaAverage12mBadge" class="sofa-badge-large">7.70</span>
+              </div>
+            </div>
+
+            <!-- Monthly Bar Chart Container -->
+            <div class="monthly-bars-wrapper">
+              <div id="monthlyBarsChart" class="monthly-bars-chart">
+                <!-- 12 monthly bars with colors and ratings injected dynamically -->
+              </div>
+            </div>
+
+            <div class="chart-footer-legend">
+              <span class="legend-circle"></span>
+              <span>Valoración media mensual</span>
+            </div>
+          </div>
+
+          <!-- Match by Match Detailed History -->
+          <div class="recent-matches-card">
+            <div class="card-subtitle">Historial de Partidos Disputados</div>
+            <div class="table-responsive">
+              <table class="matches-history-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Torneo</th>
+                    <th>Partido</th>
+                    <th class="th-center">Min</th>
+                    <th class="th-center">Goles</th>
+                    <th class="th-center">Asist</th>
+                    <th class="th-center">Tarj</th>
+                    <th class="th-center">Nota Sofascore</th>
+                    <th class="th-center">Pts Biwenger</th>
+                  </tr>
+                </thead>
+                <tbody id="matchesHistoryTableBody">
+                  <!-- Match rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

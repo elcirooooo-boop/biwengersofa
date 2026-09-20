@@ -1,0 +1,58 @@
+[
+  {
+    "id": 8,
+    "name": "LaLiga EA Sports",
+    "country": "España",
+    "flag": "es",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/8/image"
+  },
+  {
+    "id": 17,
+    "name": "Premier League",
+    "country": "Inglaterra",
+    "flag": "gb-eng",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/17/image"
+  },
+  {
+    "id": 23,
+    "name": "Serie A",
+    "country": "Italia",
+    "flag": "it",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/23/image"
+  },
+  {
+    "id": 35,
+    "name": "Bundesliga",
+    "country": "Alemania",
+    "flag": "de",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/35/image"
+  },
+  {
+    "id": 34,
+    "name": "Ligue 1",
+    "country": "Francia",
+    "flag": "fr",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/34/image"
+  },
+  {
+    "id": 7,
+    "name": "UEFA Champions League",
+    "country": "Europa",
+    "flag": "eu",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/7/image"
+  },
+  {
+    "id": 54,
+    "name": "LaLiga Hypermotion",
+    "country": "España",
+    "flag": "es",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/54/image"
+  },
+  {
+    "id": 238,
+    "name": "Liga Portugal",
+    "country": "Portugal",
+    "flag": "pt",
+    "logo": "https://api.sofascore.app/api/v1/unique-tournament/238/image"
+  }
+]
