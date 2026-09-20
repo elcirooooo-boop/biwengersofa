@@ -1,7 +1,18 @@
 // SofaBiwenger Stats App Client Logic
+const DEFAULT_LEAGUES = [
+  { id: 8, name: "LaLiga EA Sports", country: "España", flag: "es", logo: "https://api.sofascore.app/api/v1/unique-tournament/8/image" },
+  { id: 17, name: "Premier League", country: "Inglaterra", flag: "gb-eng", logo: "https://api.sofascore.app/api/v1/unique-tournament/17/image" },
+  { id: 23, name: "Serie A", country: "Italia", flag: "it", logo: "https://api.sofascore.app/api/v1/unique-tournament/23/image" },
+  { id: 35, name: "Bundesliga", country: "Alemania", flag: "de", logo: "https://api.sofascore.app/api/v1/unique-tournament/35/image" },
+  { id: 34, name: "Ligue 1", country: "Francia", flag: "fr", logo: "https://api.sofascore.app/api/v1/unique-tournament/34/image" },
+  { id: 7, name: "UEFA Champions League", country: "Europa", flag: "eu", logo: "https://api.sofascore.app/api/v1/unique-tournament/7/image" },
+  { id: 54, name: "LaLiga Hypermotion", country: "España", flag: "es", logo: "https://api.sofascore.app/api/v1/unique-tournament/54/image" },
+  { id: 238, name: "Liga Portugal", country: "Portugal", flag: "pt", logo: "https://api.sofascore.app/api/v1/unique-tournament/238/image" }
+];
+
 const state = {
   metric: 'sofascore', // 'sofascore' | 'biwenger'
-  leagues: [],
+  leagues: DEFAULT_LEAGUES,
   selectedLeagueId: 8, // LaLiga default
   teams: [],
   selectedTeamId: null,
@@ -128,6 +139,7 @@ function getPositionName(pos) {
 // 1. Initial Load
 async function init() {
   bindEvents();
+  renderLeaguesBar();
   await loadLeagues();
   checkLiveMatches();
   setInterval(checkLiveMatches, 30000); // Polling live matches every 30s
@@ -245,16 +257,14 @@ async function loadLeagues() {
   try {
     const res = await fetch('/api/leagues');
     const data = await res.json();
-    if (data.success && data.leagues) {
+    if (data.success && data.leagues && data.leagues.length > 0) {
       state.leagues = data.leagues;
       renderLeaguesBar();
-      if (state.leagues.length > 0) {
-        selectLeague(state.selectedLeagueId || state.leagues[0].id);
-      }
     }
   } catch (e) {
-    console.error('Error loading leagues:', e);
+    console.warn('Using default leagues:', e);
   }
+  selectLeague(state.selectedLeagueId || 8);
 }
 
 function renderLeaguesBar() {
@@ -280,19 +290,19 @@ async function selectLeague(leagueId) {
   try {
     const res = await fetch(`/api/leagues/${leagueId}/teams`);
     const data = await res.json();
-    if (data.success && data.teams) {
+    if (data.success && data.teams && data.teams.length > 0) {
       state.teams = data.teams;
       renderTeamSelect();
-      if (state.teams.length > 0) {
-        // Default to Real Madrid (id 2829) if in LaLiga, else first team
-        let defaultTeam = state.teams.find(t => t.id === 2829) || state.teams[0];
-        state.selectedTeamId = defaultTeam.id;
-        elements.teamSelect.value = state.selectedTeamId;
-        loadTeamSquad(state.selectedTeamId);
-      }
+      let defaultTeam = state.teams.find(t => t.id === 2829) || state.teams[0];
+      state.selectedTeamId = defaultTeam.id;
+      elements.teamSelect.value = state.selectedTeamId;
+      loadTeamSquad(state.selectedTeamId);
+    } else {
+      elements.teamSelect.innerHTML = '<option value="">No hay equipos disponibles</option>';
     }
   } catch (e) {
     console.error('Error loading teams:', e);
+    elements.teamSelect.innerHTML = '<option value="">Error al cargar equipos</option>';
   }
 }
 

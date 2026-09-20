@@ -1,5 +1,19 @@
 const { execSync } = require('child_process');
+const os = require('os');
+const path = require('path');
 const cache = require('./cacheService');
+
+// Configure cuimp directory for serverless environments (like Netlify / AWS Lambda)
+if (process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  process.env.CUIMP_DIR = path.join(os.tmpdir(), 'cuimp');
+}
+
+let cuimp = null;
+try {
+  cuimp = require('cuimp');
+} catch (e) {
+  console.warn('cuimp not loaded:', e.message);
+}
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
@@ -18,37 +32,47 @@ class SofascoreService {
 
   async fetchWithFallback(url) {
     const ua = this._getRandomUserAgent();
+    const headers = {
+      'User-Agent': ua,
+      'Accept': 'application/json, text/plain, */*',
+      'Referer': 'https://www.sofascore.com/',
+      'Origin': 'https://www.sofascore.com',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+    };
 
-    // 1. Try native fetch first
-    try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': ua,
-          'Accept': 'application/json, text/plain, */*',
-          'Referer': 'https://www.sofascore.com/',
-          'Origin': 'https://www.sofascore.com',
-          'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+    // 1. Try cuimp (curl-impersonate with Chrome TLS handshake) first
+    if (cuimp) {
+      try {
+        const res = await cuimp.get(url, { headers, timeout: 8000 });
+        if (res && res.status === 200 && res.data) {
+          return typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
         }
-      });
-
-      if (response.ok) {
-        return await response.json();
+      } catch (e) {
+        // Fall through to other methods
       }
-    } catch (e) {
-      // Fall through to curl fallback
     }
 
-    // 2. Fallback to curl if fetch fails or hits 403
+    // 2. Try curl if available
     try {
       const curlBin = process.platform === 'win32' ? 'curl.exe' : 'curl';
       const escapedUrl = url.replace(/"/g, '\\"');
       const cmd = `${curlBin} -s --max-time 8 -H "User-Agent: ${ua}" -H "Accept: application/json, text/plain, */*" -H "Referer: https://www.sofascore.com/" -H "Origin: https://www.sofascore.com" -H "Accept-Language: es-ES,es;q=0.9,en;q=0.8" "${escapedUrl}"`;
       const stdout = execSync(cmd, { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
-      if (stdout && stdout.trim().startsWith('{') || stdout.trim().startsWith('[')) {
+      if (stdout && (stdout.trim().startsWith('{') || stdout.trim().startsWith('['))) {
         return JSON.parse(stdout);
       }
     } catch (err) {
-      console.warn(`Curl fallback failed for ${url}:`, err.message);
+      // Fall through to fetch
+    }
+
+    // 3. Fallback to native fetch
+    try {
+      const response = await fetch(url, { headers });
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (e) {
+      // ignore
     }
 
     return null;

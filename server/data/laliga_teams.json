@@ -1,0 +1,202 @@
+[
+  {
+    "id": 2817,
+    "name": "FC Barcelona",
+    "slug": "barcelona",
+    "shortName": "Barcelona",
+    "position": 1,
+    "matches": 7,
+    "points": 21,
+    "logo": "https://api.sofascore.app/api/v1/team/2817/image"
+  },
+  {
+    "id": 2829,
+    "name": "Real Madrid",
+    "slug": "real-madrid",
+    "shortName": "Real Madrid",
+    "position": 2,
+    "matches": 6,
+    "points": 15,
+    "logo": "https://api.sofascore.app/api/v1/team/2829/image"
+  },
+  {
+    "id": 2816,
+    "name": "Real Betis",
+    "slug": "real-betis",
+    "shortName": "Real Betis",
+    "position": 3,
+    "matches": 6,
+    "points": 15,
+    "logo": "https://api.sofascore.app/api/v1/team/2816/image"
+  },
+  {
+    "id": 2836,
+    "name": "Atlético Madrid",
+    "slug": "atletico-madrid",
+    "shortName": "Atlético Madrid",
+    "position": 4,
+    "matches": 6,
+    "points": 13,
+    "logo": "https://api.sofascore.app/api/v1/team/2836/image"
+  },
+  {
+    "id": 2833,
+    "name": "Sevilla",
+    "slug": "sevilla",
+    "shortName": "Sevilla",
+    "position": 5,
+    "matches": 7,
+    "points": 13,
+    "logo": "https://api.sofascore.app/api/v1/team/2833/image"
+  },
+  {
+    "id": 2885,
+    "name": "Deportivo Alavés",
+    "slug": "deportivo-alaves",
+    "shortName": "Alavés",
+    "position": 6,
+    "matches": 7,
+    "points": 11,
+    "logo": "https://api.sofascore.app/api/v1/team/2885/image"
+  },
+  {
+    "id": 2832,
+    "name": "Deportivo de A Coruña",
+    "slug": "deportivo-la-coruna",
+    "shortName": "Deportivo",
+    "position": 7,
+    "matches": 6,
+    "points": 9,
+    "logo": "https://api.sofascore.app/api/v1/team/2832/image"
+  },
+  {
+    "id": 2825,
+    "name": "Athletic Club",
+    "slug": "athletic-club",
+    "shortName": "Athletic Club",
+    "position": 8,
+    "matches": 6,
+    "points": 8,
+    "logo": "https://api.sofascore.app/api/v1/team/2825/image"
+  },
+  {
+    "id": 2818,
+    "name": "Rayo Vallecano",
+    "slug": "rayo-vallecano",
+    "shortName": "Rayo Vallecano",
+    "position": 9,
+    "matches": 7,
+    "points": 8,
+    "logo": "https://api.sofascore.app/api/v1/team/2818/image"
+  },
+  {
+    "id": 2820,
+    "name": "Osasuna",
+    "slug": "osasuna",
+    "shortName": "Osasuna",
+    "position": 10,
+    "matches": 7,
+    "points": 8,
+    "logo": "https://api.sofascore.app/api/v1/team/2820/image"
+  },
+  {
+    "id": 2821,
+    "name": "Celta Vigo",
+    "slug": "celta-vigo",
+    "shortName": "Celta",
+    "position": 11,
+    "matches": 7,
+    "points": 7,
+    "logo": "https://api.sofascore.app/api/v1/team/2821/image"
+  },
+  {
+    "id": 2814,
+    "name": "Espanyol",
+    "slug": "espanyol",
+    "shortName": "Espanyol",
+    "position": 12,
+    "matches": 7,
+    "points": 7,
+    "logo": "https://api.sofascore.app/api/v1/team/2814/image"
+  },
+  {
+    "id": 2824,
+    "name": "Real Sociedad",
+    "slug": "real-sociedad",
+    "shortName": "Real Sociedad",
+    "position": 13,
+    "matches": 6,
+    "points": 7,
+    "logo": "https://api.sofascore.app/api/v1/team/2824/image"
+  },
+  {
+    "id": 2835,
+    "name": "Real Racing Club",
+    "slug": "racing-de-santander",
+    "shortName": "Racing Club",
+    "position": 14,
+    "matches": 7,
+    "points": 7,
+    "logo": "https://api.sofascore.app/api/v1/team/2835/image"
+  },
+  {
+    "id": 2819,
+    "name": "Villarreal",
+    "slug": "villarreal",
+    "shortName": "Villarreal",
+    "position": 15,
+    "matches": 6,
+    "points": 5,
+    "logo": "https://api.sofascore.app/api/v1/team/2819/image"
+  },
+  {
+    "id": 2849,
+    "name": "Levante UD",
+    "slug": "levante-ud",
+    "shortName": "Levante",
+    "position": 16,
+    "matches": 5,
+    "points": 5,
+    "logo": "https://api.sofascore.app/api/v1/team/2849/image"
+  },
+  {
+    "id": 2859,
+    "name": "Getafe",
+    "slug": "getafe",
+    "shortName": "Getafe",
+    "position": 17,
+    "matches": 6,
+    "points": 5,
+    "logo": "https://api.sofascore.app/api/v1/team/2859/image"
+  },
+  {
+    "id": 2846,
+    "name": "Elche",
+    "slug": "elche",
+    "shortName": "Elche",
+    "position": 18,
+    "matches": 7,
+    "points": 5,
+    "logo": "https://api.sofascore.app/api/v1/team/2846/image"
+  },
+  {
+    "id": 2828,
+    "name": "Valencia",
+    "slug": "valencia",
+    "shortName": "Valencia",
+    "position": 19,
+    "matches": 6,
+    "points": 4,
+    "logo": "https://api.sofascore.app/api/v1/team/2828/image"
+  },
+  {
+    "id": 2830,
+    "name": "Málaga CF",
+    "slug": "malaga",
+    "shortName": "Málaga",
+    "position": 20,
+    "matches": 6,
+    "points": 3,
+    "logo": "https://api.sofascore.app/api/v1/team/2830/image"
+  }
+]
