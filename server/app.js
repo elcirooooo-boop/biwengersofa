@@ -219,12 +219,13 @@ app.get('/api/scouting/roles', (req, res) => {
 // 5.2 Scouting: Get League-Wide Ranking by Tactical Role (3M, 6M, 12M)
 app.get('/api/scouting/rankings', (req, res) => {
   try {
-    const roleId = (req.query.role || 'PIVOTE').toUpperCase();
+    const rawRole = (req.query.role || 'MEDIOCAMPO').toUpperCase();
+    const roleId = calculator.normalizeRole ? calculator.normalizeRole(rawRole) : rawRole;
     const windowKey = req.query.window === '6m' ? 'last6m' : req.query.window === '12m' ? 'last12m' : 'last3m';
     const minMatches = parseInt(req.query.minMatches || '1', 10);
 
     const roles = calculator.getRolesDefinitions();
-    const roleDef = roles[roleId] || roles.PIVOTE;
+    const roleDef = roles[roleId] || roles.MEDIOCAMPO;
 
     // Map teams info
     let laligaTeams = [];

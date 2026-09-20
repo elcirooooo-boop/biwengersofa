@@ -273,14 +273,52 @@ class StatsCalculator {
   }
 
   /**
-   * Tactical Roles and Criteria Matrix (matching the user's scouting matrix)
+   * Normalize any legacy role name to the 4 standard football positions
+   */
+  normalizeRole(roleId) {
+    const r = (roleId || '').toUpperCase();
+    if (r === 'PIVOTE') return 'MEDIOCAMPO';
+    if (r === 'CENTRAL' || r === 'LATERAL') return 'DEFENSA';
+    if (r === 'EXTREMO') return 'DELANTERO';
+    return r;
+  }
+
+  /**
+   * Tactical Roles and Criteria Matrix separated strictly into:
+   * Porteros, Defensas, Mediocampo y Delanteros
    */
   getRolesDefinitions() {
     return {
-      PIVOTE: {
-        id: 'PIVOTE',
-        name: 'Pivote / Interior organizador',
-        shortName: 'Pivote / Interior',
+      PORTERO: {
+        id: 'PORTERO',
+        name: 'Porteros',
+        shortName: 'Porteros',
+        icon: '🧤',
+        color: '#8b5cf6',
+        applicablePositions: ['G', 'POR'],
+        criteria: [
+          { id: 'saves', label: 'Paradas / p', target: 3.5, op: 'gt', unit: '', desc: '> 3.5 paradas por partido' },
+          { id: 'savePctInsideBox', label: '% Paradas en área', target: 60, op: 'gt', unit: '%', desc: 'Alto % de disparos detenidos en área' }
+        ]
+      },
+      DEFENSA: {
+        id: 'DEFENSA',
+        name: 'Defensas',
+        shortName: 'Defensas',
+        icon: '🛡️',
+        color: '#10b981',
+        applicablePositions: ['D', 'DEF'],
+        criteria: [
+          { id: 'aerialDuelsPct', label: '% Duelos aéreos ganados', target: 65, op: 'gt', unit: '%', desc: '> 65% de duelos aéreos ganados' },
+          { id: 'clearances', label: 'Despejes / p', target: 4.0, op: 'gt', unit: '', desc: '> 4 despejes por partido' },
+          { id: 'tacklesInterceptions', label: 'Entradas + Intercepciones / p', target: 3.0, op: 'gt', unit: '', desc: '> 3 entradas / intercepciones' },
+          { id: 'accuratePasses', label: 'Pases completados / p', target: 50, op: 'gt', unit: '', desc: '> 50 pases completados' }
+        ]
+      },
+      MEDIOCAMPO: {
+        id: 'MEDIOCAMPO',
+        name: 'Mediocampo',
+        shortName: 'Mediocampo',
         icon: '🧠',
         color: '#3b82f6',
         applicablePositions: ['M', 'MED'],
@@ -291,75 +329,32 @@ class StatsCalculator {
           { id: 'longBalls', label: 'Pases largos precisos / p', target: 5.0, op: 'gt', unit: '', desc: '> 5 pases largos precisos' }
         ]
       },
-      CENTRAL: {
-        id: 'CENTRAL',
-        name: 'Defensa Central con salida',
-        shortName: 'Central con salida',
-        icon: '🛡️',
-        color: '#10b981',
-        applicablePositions: ['D', 'DEF'],
-        criteria: [
-          { id: 'aerialDuelsPct', label: '% Duelos aéreos ganados', target: 65, op: 'gt', unit: '%', desc: '> 65% de duelos aéreos ganados' },
-          { id: 'clearances', label: 'Despejes / p', target: 4.0, op: 'gt', unit: '', desc: '> 4 despejes por partido' },
-          { id: 'accuratePasses', label: 'Pases completados / p', target: 50, op: 'gt', unit: '', desc: '> 50 pases completados' }
-        ]
-      },
-      LATERAL: {
-        id: 'LATERAL',
-        name: 'Lateral profundo / Carrilero',
-        shortName: 'Lateral profundo',
-        icon: '⚡',
-        color: '#f59e0b',
-        applicablePositions: ['D', 'DEF', 'M'],
-        criteria: [
-          { id: 'accurateCrosses', label: 'Centros completados / p', target: 1.5, op: 'gt', unit: '', desc: '> 1.5 centros completados' },
-          { id: 'tacklesInterceptions', label: 'Entradas + Intercepciones / p', target: 3.0, op: 'gt', unit: '', desc: '> 3 entradas / intercepciones' },
-          { id: 'crossesAttempted', label: 'Centros intentados / Córners / p', target: 3.0, op: 'gte', unit: '', desc: 'Lanzador de saques de esquina' }
-        ]
-      },
-      EXTREMO: {
-        id: 'EXTREMO',
-        name: 'Extremo / Mediapunta',
-        shortName: 'Extremo / Mediapunta',
+      DELANTERO: {
+        id: 'DELANTERO',
+        name: 'Delanteros',
+        shortName: 'Delanteros',
         icon: '🎯',
         color: '#ec4899',
-        applicablePositions: ['F', 'DEL', 'M'],
+        applicablePositions: ['F', 'DEL'],
         criteria: [
           { id: 'keyPasses', label: 'Pases clave / p', target: 2.0, op: 'gt', unit: '', desc: '> 2 pases clave/partido' },
           { id: 'shotsOnTarget', label: 'Tiros a puerta / p', target: 2.0, op: 'gt', unit: '', desc: '> 2 tiros a puerta' },
           { id: 'dribblesPct', label: '% Regates completados', target: 55, op: 'gt', unit: '%', desc: '> 55% de regates completados' }
-        ]
-      },
-      PORTERO: {
-        id: 'PORTERO',
-        name: 'Portero de equipo medio-bajo',
-        shortName: 'Portero',
-        icon: '🧤',
-        color: '#8b5cf6',
-        applicablePositions: ['G', 'POR'],
-        criteria: [
-          { id: 'saves', label: 'Paradas / p', target: 3.5, op: 'gt', unit: '', desc: '> 3.5 paradas por partido' },
-          { id: 'savePctInsideBox', label: '% Paradas en área', target: 60, op: 'gt', unit: '%', desc: 'Alto % de disparos detenidos en área' }
         ]
       }
     };
   }
 
   /**
-   * Determine tactical role based on player position and profile
+   * Determine position category based on player position (Porteros, Defensas, Mediocampo, Delanteros)
    */
   determinePlayerRole(player) {
-    if (player.tacticalRole) return player.tacticalRole;
+    if (player.tacticalRole) return this.normalizeRole(player.tacticalRole);
     const pos = (player.position || 'M').toUpperCase();
     if (pos === 'G' || pos === 'POR') return 'PORTERO';
-    if (pos === 'D' || pos === 'DEF') {
-      const name = (player.name || '').toLowerCase();
-      // Common lateral keywords or known wingbacks
-      const isLateral = /lateral|carrilero|wingback|arnold|cucurella|mendy|carreras|balde|kounde|garcia|carvajal|vasquez|frimpong|cancelo/i.test(name) || player.isWingback;
-      return isLateral ? 'LATERAL' : 'CENTRAL';
-    }
-    if (pos === 'F' || pos === 'DEL') return 'EXTREMO';
-    return 'PIVOTE';
+    if (pos === 'D' || pos === 'DEF') return 'DEFENSA';
+    if (pos === 'F' || pos === 'DEL') return 'DELANTERO';
+    return 'MEDIOCAMPO';
   }
 
   /**
@@ -367,8 +362,9 @@ class StatsCalculator {
    */
   evaluatePlayerTactical(player, windowKey = 'last3m', forcedRole = null) {
     const roles = this.getRolesDefinitions();
-    const roleId = forcedRole || this.determinePlayerRole(player);
-    const role = roles[roleId] || roles.PIVOTE;
+    const rawRole = forcedRole || this.determinePlayerRole(player);
+    const roleId = this.normalizeRole(rawRole);
+    const role = roles[roleId] || roles.MEDIOCAMPO;
 
     const win = player.stats?.windows?.[windowKey] || {};
     const pj = win.matchesCount || 0;
@@ -381,7 +377,23 @@ class StatsCalculator {
     const raw = player.tacticalData || {};
     const metricsMap = {};
 
-    if (roleId === 'PIVOTE') {
+    if (roleId === 'PORTERO') {
+      const saves = raw.saves ?? parseFloat((Math.max(1.5, avgRating >= 7.5 ? 4.1 : avgRating >= 7.0 ? 3.7 : 3.1)).toFixed(1));
+      const savePctInsideBox = raw.savePctInsideBox ?? parseFloat((Math.min(88, (avgRating >= 7.5 ? 68.4 : avgRating >= 7.0 ? 63.1 : 54.0))).toFixed(1));
+
+      metricsMap.saves = saves;
+      metricsMap.savePctInsideBox = savePctInsideBox;
+    } else if (roleId === 'DEFENSA') {
+      const aerialDuelsPct = raw.aerialDuelsPct ?? parseFloat((Math.min(92, (avgRating >= 7.5 ? 74.5 : avgRating >= 7.0 ? 68.2 : 58.4))).toFixed(1));
+      const clearances = raw.clearances ?? parseFloat((Math.max(1.8, avgRating >= 7.5 ? 5.2 : avgRating >= 7.0 ? 4.3 : 3.1)).toFixed(1));
+      const tacklesInterceptions = raw.tacklesInterceptions ?? parseFloat((Math.max(1.2, avgRating >= 7.5 ? 3.6 : avgRating >= 7.0 ? 3.1 : 2.4)).toFixed(1));
+      const accuratePasses = raw.accuratePasses ?? parseFloat((Math.max(28, (avgMin / 90) * (avgRating >= 7.5 ? 58.6 : avgRating >= 7.0 ? 51.4 : 42.0))).toFixed(1));
+
+      metricsMap.aerialDuelsPct = aerialDuelsPct;
+      metricsMap.clearances = clearances;
+      metricsMap.tacklesInterceptions = tacklesInterceptions;
+      metricsMap.accuratePasses = accuratePasses;
+    } else if (roleId === 'MEDIOCAMPO') {
       const passesAttempted = raw.passesAttempted ?? parseFloat((Math.max(35, (avgMin / 90) * (avgRating >= 7.5 ? 69.4 : avgRating >= 7.0 ? 63.8 : 53.2))).toFixed(1));
       const passAccuracy = raw.passAccuracy ?? parseFloat((Math.min(96, (avgRating >= 7.8 ? 91.8 : avgRating >= 7.2 ? 89.2 : 86.4))).toFixed(1));
       const keyPasses = raw.keyPasses ?? parseFloat((Math.max(0.4, avgAssists * 3.5 + (avgRating >= 7.5 ? 1.7 : avgRating >= 7.0 ? 1.3 : 0.8))).toFixed(1));
@@ -391,23 +403,7 @@ class StatsCalculator {
       metricsMap.passAccuracy = passAccuracy;
       metricsMap.keyPasses = keyPasses;
       metricsMap.longBalls = longBalls;
-    } else if (roleId === 'CENTRAL') {
-      const aerialDuelsPct = raw.aerialDuelsPct ?? parseFloat((Math.min(92, (avgRating >= 7.5 ? 74.5 : avgRating >= 7.0 ? 68.2 : 58.4))).toFixed(1));
-      const clearances = raw.clearances ?? parseFloat((Math.max(1.8, avgRating >= 7.5 ? 5.2 : avgRating >= 7.0 ? 4.3 : 3.1)).toFixed(1));
-      const accuratePasses = raw.accuratePasses ?? parseFloat((Math.max(28, (avgMin / 90) * (avgRating >= 7.5 ? 58.6 : avgRating >= 7.0 ? 51.4 : 42.0))).toFixed(1));
-
-      metricsMap.aerialDuelsPct = aerialDuelsPct;
-      metricsMap.clearances = clearances;
-      metricsMap.accuratePasses = accuratePasses;
-    } else if (roleId === 'LATERAL') {
-      const accurateCrosses = raw.accurateCrosses ?? parseFloat((Math.max(0.3, avgAssists * 3.2 + (avgRating >= 7.5 ? 1.9 : avgRating >= 7.0 ? 1.4 : 0.9))).toFixed(1));
-      const tacklesInterceptions = raw.tacklesInterceptions ?? parseFloat((Math.max(1.2, avgRating >= 7.5 ? 3.6 : avgRating >= 7.0 ? 3.1 : 2.4)).toFixed(1));
-      const crossesAttempted = raw.crossesAttempted ?? parseFloat((Math.max(1.5, accurateCrosses * 2.8 + 0.5)).toFixed(1));
-
-      metricsMap.accurateCrosses = accurateCrosses;
-      metricsMap.tacklesInterceptions = tacklesInterceptions;
-      metricsMap.crossesAttempted = crossesAttempted;
-    } else if (roleId === 'EXTREMO') {
+    } else if (roleId === 'DELANTERO') {
       const keyPasses = raw.keyPasses ?? parseFloat((Math.max(0.6, avgAssists * 3.8 + (avgRating >= 7.5 ? 2.3 : avgRating >= 7.0 ? 1.8 : 1.1))).toFixed(1));
       const shotsOnTarget = raw.shotsOnTarget ?? parseFloat((Math.max(0.5, avgGoals * 1.6 + (avgRating >= 7.5 ? 2.2 : avgRating >= 7.0 ? 1.6 : 0.9))).toFixed(1));
       const dribblesPct = raw.dribblesPct ?? parseFloat((Math.min(85, (avgRating >= 7.8 ? 62.5 : avgRating >= 7.3 ? 57.2 : 49.5))).toFixed(1));
@@ -415,12 +411,6 @@ class StatsCalculator {
       metricsMap.keyPasses = keyPasses;
       metricsMap.shotsOnTarget = shotsOnTarget;
       metricsMap.dribblesPct = dribblesPct;
-    } else if (roleId === 'PORTERO') {
-      const saves = raw.saves ?? parseFloat((Math.max(1.5, avgRating >= 7.5 ? 4.1 : avgRating >= 7.0 ? 3.7 : 3.1)).toFixed(1));
-      const savePctInsideBox = raw.savePctInsideBox ?? parseFloat((Math.min(88, (avgRating >= 7.5 ? 68.4 : avgRating >= 7.0 ? 63.1 : 54.0))).toFixed(1));
-
-      metricsMap.saves = saves;
-      metricsMap.savePctInsideBox = savePctInsideBox;
     }
 
     // Evaluate criteria

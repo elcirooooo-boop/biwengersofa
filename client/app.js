@@ -24,7 +24,7 @@ const state = {
   activePlayerStats: null,
 
   // Scouting State
-  scoutingRole: 'PIVOTE',
+  scoutingRole: 'PORTERO',
   scoutingWindow: '3m', // '3m' | '6m' | '12m'
   scoutingTeamFilter: 'ALL',
   scoutingComplianceFilter: 'ALL',
@@ -172,7 +172,7 @@ function getPositionName(pos) {
   const p = (pos || '').toUpperCase();
   if (p === 'G' || p === 'POR') return 'Portero';
   if (p === 'D' || p === 'DEF') return 'Defensa';
-  if (p === 'M' || p === 'MED') return 'Centrocampista';
+  if (p === 'M' || p === 'MED') return 'Mediocampo';
   if (p === 'F' || p === 'DEL') return 'Delantero';
   return pos || 'Jugador';
 }
